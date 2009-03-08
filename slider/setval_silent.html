@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.6.0/build/slider/assets/skins/sam/slider.css">
+    <style type="text/css" class="highlight-ignore">
+        body {
+            font: normal 93%/1.4 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        h3 {
+            clear: both;
+        }
+    </style>
+    <style type="text/css">
+        #report {
+            margin: 1em 0;
+            overflow: hidden;
+        }
+        #report p {
+            margin: 0;
+        }
+        #report p span {
+            font-weight: bold;
+        }
+        #report div {
+            height: 2em;
+            line-height: 2em;
+            padding: 20px;
+            display: inline;
+            float: left;
+            margin-left: 1em;
+            border: 5px solid #ccc;
+        }
+        .change .change,
+        .end .end {
+            background: #050;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/38817">ydn-js origin</a>
+<h1>Restoring silent setValues support to DualSlider</h1>
+<h2>Background</h2>
+<p>YUI v2.5.2 supported DualSlider API setValues(...) passing true to a <em>silent</em> parameter, which prevented the <code>change</code> and <code>slideEnd</code> events from firing.  This was so because <code>setValues</code> passed then input values to the respective minSlider and maxSlider's <code>setValue</code>.</p>
+<p>In v2.6.0, the minSlider and maxSlider's <code>setValue</code> is called with silent always set to <code>false</code> because DualSlider maintains its properties <code>minVal</code> and <code>maxVal</code> in response to the min and maxSliders' slideEnd events, so the values would get out of sync if setValue was called with silent = true.  The fallout from this change is that the silent flag is essentially ignored.</p>
+
+<h2>Workaround</h2>
+<p>A fix for this will be forthcoming in the next release, but in the mean time, implementers can use v2.5.2 of DualSlider or apply a patch to the DualSlider's <code>setValues</code> method.  Additionally, <code>getMinVal</code> and <code>getMaxVal</code> methods are added to DualSlider's prototype to account for minVal and maxVal being unreliable.  The v2.5.2 DualSlider has other bugs, so it is not recommended unless proven necessary.</p>
+<p><strong>CAVEAT:</strong> This workaround only works for animated DualSliders and only when setValue is called with the <em>skipAnim</em> parameter set to <code>false</code>.</p>
+
+<div class="markup">
+    <div id="bg" class="yui-h-slider" tabindex="-1">
+        <div id="min" class="yui-slider-thumb">
+            <img src="http://yui.yahooapis.com/2.6.0/build/slider/assets/left-thumb.png" alt="slider thumb">
+        </div>
+        <div id="max" class="yui-slider-thumb">
+            <img src="http://yui.yahooapis.com/2.6.0/build/slider/assets/right-thumb.png" alt="slider thumb">
+        </div>
+    </div>
+    <p>
+        <input type="button" id="set" value="setValues(30,100,false,false,true)"> <label for="set">Set silent, allowing animation</label>.</p>
+    <p><em>Click update below to see reported minVal/maxVal are different than getMinVal()/getMaxVal().</em></p>
+    <p>
+        <input type="button" id="set2" value="setValues(30,100,true,false,true)"> <label for="set2">Set silent, preventing animation</label>.</p>
+    <p><em>Note events are fired, despite the silent param.</em></p>
+    <div id="report">
+        <h3>Slider values <input type="button" id="get" value="update"></h3>
+        <p>slider.minVal: <span id="minval"></span> vs
+           slider.getMinVal(): <span id="getminval"></span></p>
+        <p>slider.maxVal: <span id="maxval"></span> vs
+           slider.getMaxVal(): <span id="getmaxval"></span></p>
+        <h3>Event Monitors <input type="button" id="reset" value="reset"></h3>
+        <div class="change">change fired</div>
+        <div class="end">slideEnd fired</div>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/slider/slider.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/animation/animation.js"></script>
+<script type="text/javascript">
+YAHOO.widget.DualSlider.prototype.getMinVal = function () {
+    return this.minSlider.getValue();
+};
+YAHOO.widget.DualSlider.prototype.getMaxVal = function () {
+    return this.maxSlider.getValue();
+};
+
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex  = YAHOO.namespace('example'),
+    Dom = YAHOO.util.Dom,
+    minval = Dom.get('minval'),
+    maxval = Dom.get('maxval'),
+    getminval = Dom.get('getminval'),
+    getmaxval = Dom.get('getmaxval');
+
+// Show the values from slider.minVal vs new slider.getMinVal() etc
+Ex.reportValues = function () {
+    minval.innerHTML = Ex.slider.minVal;
+    maxval.innerHTML = Ex.slider.maxVal;
+    getminval.innerHTML = Ex.slider.getMinVal();
+    getmaxval.innerHTML = Ex.slider.getMaxVal();
+};
+
+// Instantiate the slider
+Ex.slider = YAHOO.widget.Slider.getHorizDualSlider('bg','min','max',200);
+// Override the slider's setValues method to restore silent flags
+Ex.slider.setValues = function (min,max,skipAnim,force,silent) {
+    YAHOO.widget.DualSlider.prototype.setValues.apply(this,arguments);
+    this.minSlider._silent = this.maxSlider._silent = silent;
+};
+
+// Highlight the change block on change events
+Ex.slider.subscribe('change',function () {
+    Dom.addClass('report','change');
+});
+// Highlight the slideEnd block on slideEnd events
+Ex.slider.subscribe('slideEnd',function () {
+    Dom.addClass('report','end');
+});
+
+// report the initial values
+Ex.slider.subscribe('ready',Ex.reportValues);
+
+// Wire up the example buttons
+YAHOO.util.Event.on('set','click',function () {
+    Ex.slider.setValues(30,100,false,false,true);
+});
+YAHOO.util.Event.on('set2','click',function () {
+    Ex.slider.setValues(30,100,true,false,true);
+});
+
+YAHOO.util.Event.on('reset','click',function () {
+    Dom.removeClass('report','change');
+    Dom.removeClass('report','end');
+});
+
+YAHOO.util.Event.on('get','click',Ex.reportValues);
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js?highlight=javascript,markup,css"></script>
+</body>
+</html>

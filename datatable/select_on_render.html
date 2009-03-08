@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.6.0/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/38708">ydn-js origin</a>
+<div id="tbl"></div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/element/element-beta-min.js&2.6.0/build/datasource/datasource-min.js&2.6.0/build/datatable/datatable-min.js"></script>
+<script type="text/javascript" src="data.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example');
+
+Ex.dataSource = new YAHOO.util.DataSource(YAHOO.example.Data.inventory,{
+    responseType : YAHOO.util.DataSource.TYPE_JSARRAY,
+    responseSchema : {
+        fields : ['SKU','Quantity','Item','Description']
+    }
+});
+
+// Don't display the SKU column
+Ex.cols = [
+    { key: 'Item', sortable: true },
+    { key: 'Quantity', sortable: true },
+    { key: 'Description', sortable: true }
+];
+
+// Because this example uses a local array, we need to delay the initial load
+// so we can add the initEvent subscriber before the table is first loaded and
+// rendered.  This would be unnecessary if we were using an XHR DataSource
+Ex.conf = {
+    initialLoad : false
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',Ex.cols,Ex.dataSource,Ex.conf);
+
+// Before we load the data into the table, subscribe to the initEvent with a
+// function that will look for a specific record in the RecordSet and select it.
+Ex.dataTable.subscribe('initEvent',function () {
+    var recs = this.getRecordSet()._records,
+        i,len;
+
+    for (i = 0,len = recs.length; i < len; ++i) {
+        if (recs[i].getData('SKU') === '84-84848') {
+            this.selectRow(recs[i]);
+            break;
+        }
+    }
+});
+
+// Load the data and render the table
+Ex.dataSource.sendRequest(null,{
+    success : Ex.dataTable.onDataReturnSetRows,
+    scope : Ex.dataTable
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

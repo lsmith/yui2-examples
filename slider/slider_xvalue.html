@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        /* page styles.  Feel free to ignore. */
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .hide {
+            display: none;
+        }
+
+        /* Example styles */
+        .c {
+            width: 30em;
+            border: 3px solid #ccc;
+            margin: 0 auto;
+        }
+        #bg {
+            position: relative;
+            height: 28px;
+            width: 228px;
+            background: url(http://developer.yahoo.com/yui/examples/slider/assets/bg-fader.gif) 5px 0 no-repeat;
+        }
+        #t {
+            position: absolute;
+            top: 4px;
+        }
+        .big {
+            height: 0;
+            width: 100px;
+            background: #f00;
+            margin: 2em auto;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/32557">ydn-js origin</a>
+<h1>Slider thumb missing ticks bug - workaround</h1>
+<h3>Background</h3>
+<p><code>YAHOO.widget.Slider</code> has a bug when configured to use ticks that surfaces when the slider background element position is shifted at runtime.  In particular, when the window is adorned with a scrollbar.</p>
+<img src="tick_offset.png" alt="Slider with thumb off tick mark">
+<p>You can see the error and the workaround in long form on <a href="tick_offset.html">this page</a>.</p>
+
+<h3>Patch</h3>
+<p>Modify the <code>verifyOffset</code> method on the <code>Slider</code> class prototype to more comprehensively update positional reference values.</p>
+<p><strong>Caveat:</strong> A full solution is still in development and may bear no resemblance to this workaround when it arrives.</p>
+
+<p><button id="toggle_code">Hide code</button> -- aimed at adding/removing scrollbar</p>
+<div class="c">
+    <div id="bg">
+        <div id="t"><img src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" alt="slider thumb"></div>
+    </div>
+</div>
+<div id="big" class="big"></div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/animation/animation.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/slider/slider.js"></script>
+<script type="text/javascript">
+// Patch for thumb missing ticks after background shift
+YAHOO.widget.Slider.prototype.verifyOffset=function(){var xy=YAHOO.util.Dom.getXY(this.getEl()),t=this.thumb;if(xy&&this.baselinePos[0]!=xy[0]||this.baselinePos[1]!=xy[1]){this.setInitPosition();this.baselinePos=xy;t.initPageX=this.initPageX+t.startOffset[0];t.initPageY=this.initPageY+t.startOffset[1];t.deltaSetXY=[-this.initPageX,-this.initPageY];t.resetConstraints();}};
+
+// Patch for Slider background responding to drag when backgroundEnabled = false
+YAHOO.widget.Slider.prototype.onDrag=function(e){if(!this.isLocked()&&this.backgroundEnabled){var x=YAHOO.util.Event.getPageX(e);var y=YAHOO.util.Event.getPageY(e);this.moveThumb(x,y,true,true);this.fireEvents();}};
+
+YAHOO.util.Event.onDOMReady(function () {
+
+    var Ex = YAHOO.namespace('example'),
+        big = document.getElementById('big');
+        
+    Ex.slider = YAHOO.widget.Slider.getHorizSlider('bg','t',0,200,20);
+
+    Ex.slider.subscribe('change',function (val) {
+        big.style.height = (val*10)+'px';
+    });
+
+    // Toggle the code visibility
+    YAHOO.util.Event.on('toggle_code','click', function (e) {
+        YAHOO.util.Event.stopEvent(e);
+        var code = document.getElementsByTagName('h2')[0].parentNode;
+        if (code.className === 'hide') {
+            this.innerHTML = 'Hide code';
+            code.className = '';
+        } else {
+            this.innerHTML = 'Show code';
+            code.className = 'hide';
+        }
+    });
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

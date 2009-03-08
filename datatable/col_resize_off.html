@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #resize {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+            font: normal .77em/1.4 Arial, Helvetica, sans-serif;
+            width: 10em;
+            margin-bottom: 1em;
+        }
+        #resize caption {
+            font-weight: bold;
+        }
+        #resize td {
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/35155">ydn-js origin</a>
+<h1>Enabling/Disabling column resize at runtime</h1>
+
+<div class="markup">
+    <table id="resize">
+    <caption>Enable resize</caption>
+    <thead>
+        <tr>
+            <th><label for="res_foo">Foo</label></th>
+            <th><label for="res_bar">Bar</label></th>
+            <th><label for="res_baz">Baz</label></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><input type="checkbox" name="resize_col" id="res_foo" value="foo" checked="checked"></td>
+            <td><input type="checkbox" name="resize_col" id="res_bar" value="bar" checked="checked"></td>
+            <td><input type="checkbox" name="resize_col" id="res_baz" value="baz" checked="checked"></td>
+        </tr>
+    </tbody>
+    </table>
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/dragdrop/dragdrop-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex        = YAHOO.namespace('example'),
+    Dom       = YAHOO.util.Dom,
+    Event     = YAHOO.util.Event,
+    data      = [
+        {foo:1,bar:'bar:1',baz:'goop'},
+        {foo:2,bar:'bar:2',baz:'goop'},
+        {foo:3,bar:'bar:3',baz:'goop'},
+        {foo:4,bar:'bar:4',baz:'goop'},
+        {foo:5,bar:'bar:5',baz:'goop'},
+    ],
+    checkboxes,i;
+
+Ex.dataSource = new YAHOO.util.DataSource(data);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['foo','bar','baz']
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [ {key:'foo',sortable: true, resizeable: true},
+                  {key:'bar',sortable: true, resizeable: true},
+                  {key:'baz',sortable: true, resizeable: true} ],
+                Ex.dataSource);
+
+Ex.updateResizeable = function (e) {
+    var t = Event.getTarget(e);
+
+    if (t.nodeName.toLowerCase() === 'input') {
+        var col =  Ex.dataTable.getColumn(t.value)
+        col.resizeable = t.checked;
+
+        Ex.dataTable._initTheadEls();
+    }
+};
+
+checkboxes = Dom.get('resize').getElementsByTagName('input');
+
+for (i = checkboxes.length - 1; i >= 0; --i) {
+    Event.on(checkboxes[i],'click',Ex.updateResizeable);
+}
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal .77em/1.4 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .markup {
+            padding: 1em 0;
+            border-bottom: 1px solid #ccc;
+        }
+        .hide {
+            display: none;
+        }
+        .report {
+            border: 1px solid #333;
+            padding: .25ex 1ex;
+        }
+        .bg {
+            position: relative;
+            background: url(http://developer.yahoo.com/yui/examples/slider/assets/bg-h.gif) no-repeat 5px -3px;
+            width: 227px;
+            height: 21px;
+            margin-bottom: 1em;
+        }
+        .t {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/29151">ydn-js origin</a>
+<h1>Instantiating Sliders in a hidden container</h1>
+<h3>Challenge</h3>
+<p>Sliders use DOM position offsets to calculate value.  The initial offsets are calculated at instantiation.  If the Slider is instantiated in a hidden container, the initial offsets are stored as <code>NaN</code>, resulting in all further calculations returning <code>NaN</code>.</p>
+<h3>Solution(s)</h3>
+<p>There are three methods to create Sliders with functional offset calculations:</p>
+<ol>
+    <li>Don't instantiate the Slider until the container is displayed <strong>(preferred)</strong></li>
+    <li>Execute the slider thumb's <code>resetConstraints</code> method and the Slider's <code>setStartSliderState</code> when the container is displayed</li>
+    <li>Patch the Slider's <code>verifyOffset</code> method to account for incorrectly initialized offsets</li>
+</ol>
+<p>Each of these approaches has its drawbacks (noted in the code below).</p>
+<p>DualSlider additionally needs some code patches to facilitate correcting its reference values (for options #2 and #3).</p>
+<p><strong>Caveat</strong>: Attempts to <code>getValue</code> or <code>setValue</code> will still fail (return <code>NaN</code>) as long as the Slider is not displayed.</p>
+
+<div class="markup">
+    <h2>Solution #1: Instantiate on container display</h2>
+    <a id="show1" href="#">Unhide Container</a>
+
+    <div id="container1" class="hide">
+        <h3>Slider</h3>
+        <div class="bg" id="slider1">
+            <img class="t" id="thumb1" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+        </div>
+        <label>Value: <span id="report1">(unknown)</span></label>
+
+        <h3>DualSlider</h3>
+        <div class="bg" id="dual1">
+            <img class="t" id="min1" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+            <img class="t" id="max1" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+        </div>
+        <label>Range: <span id="report_dual1">(unknown)</span></label>
+    </div>
+</div>
+
+<div class="markup">
+    <h2>Solution #2: Reset internal references on container display</h2>
+    <a id="show2" href="#">Unhide Container</a>
+
+    <div id="container2" class="hide">
+        <h3>Slider</h3>
+        <div class="bg" id="slider2">
+            <img class="t" id="thumb2" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+        </div>
+        <label>Value: <span id="report2">(unknown)</span></label>
+
+        <h3>DualSlider</h3>
+        <div class="bg" id="dual2">
+            <img class="t" id="min2" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+            <img class="t" id="max2" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+        </div>
+        <label>Range: <span id="report_dual2">(unknown)</span></label>
+    </div>
+</div>
+
+<div class="markup">
+    <h2>Solution #3: Patch Slider's <code>verifyOffset</code> method</h2>
+    <a id="show3" href="#">Unhide Container</a>
+
+    <div id="container3" class="hide">
+        <h3>Slider</h3>
+        <div class="bg" id="slider3">
+            <img class="t" id="thumb3" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+        </div>
+        <label>Value: <span id="report3">(unknown)</span></label>
+
+        <h3>DualSlider (still broken)</h3>
+        <div class="bg" id="dual3">
+            <img class="t" id="min3" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+            <img class="t" id="max3" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" width="17" height="21">
+        </div>
+        <label>Range: <span id="report_dual3">(unknown)</span></label>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
+<!--
+<script type="text/javascript" src="/dev/2.5/yahoo/presentation/2.x/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="/dev/2.5/yahoo/presentation/2.x/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="/dev/2.5/yahoo/presentation/2.x/build/slider/slider.js"></script>
+-->
+
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function() {
+
+    var Ex     = YAHOO.namespace('example'),
+        Dom    = YAHOO.util.Dom,
+        Event  = YAHOO.util.Event,
+        Slider = YAHOO.widget.Slider;
+
+    // Apply some patches to DualSlider's prototype before instantiation
+    // Patch to support vertical DualSliders with wide thumbs
+    YAHOO.widget.DualSlider.prototype.updateValue=function(silent){var min=this.minSlider.getValue(),max=this.maxSlider.getValue(),changed=false;if(min!=this.minVal||max!=this.maxVal){changed=true;var mint=this.minSlider.thumb,maxt=this.maxSlider.thumb,dim=this.isHoriz?'x':'y';var thumbInnerWidth=this.minSlider.thumbCenterPoint[dim]+this.maxSlider.thumbCenterPoint[dim];var minConstraint=Math.max(max-thumbInnerWidth-this.minRange,0);var maxConstraint=Math.min(-min-thumbInnerWidth-this.minRange,0);if(this.isHoriz){minConstraint=Math.min(minConstraint,maxt.rightConstraint);mint.setXConstraint(mint.leftConstraint,minConstraint,mint.tickSize);maxt.setXConstraint(maxConstraint,maxt.rightConstraint,maxt.tickSize);}else{minConstraint=Math.min(minConstraint,maxt.bottomConstraint);mint.setYConstraint(mint.leftConstraint,minConstraint,mint.tickSize);maxt.setYConstraint(maxConstraint,maxt.bottomConstraint,maxt.tickSize);}}this.minVal=min;this.maxVal=max;if(changed&&!silent){this.fireEvent("change",this);}};
+
+    // Patch to support selecting the right Slider when A) one is locked, or
+    // B) displayed after instantiation in hidden container
+    YAHOO.widget.DualSlider.prototype.selectActiveSlider=function(e){var min=this.minSlider,max=this.maxSlider,minLocked=min.isLocked(),maxLocked=max.isLocked(),d;if(minLocked&&!maxLocked){this.activeSlider=max;}else if(!minLocked&&maxLocked){this.activeSlider=min;}else{if(this.isHoriz){d=YAHOO.util.Event.getPageX(e)-min.thumb.initPageX-min.thumbCenterPoint.x;}else{d=YAHOO.util.Event.getPageY(e)-min.thumb.initPageY-min.thumbCenterPoint.y;}this.activeSlider=d*2>max.getValue()+min.getValue()?max:min;}};
+
+
+
+    /*******************************************************************/
+    /* Solution #1: Instantiate when container is displayed            */
+    /* Pros: No special code or prototype changes (except DualSlider   */
+    /*       bug patches).                                             */
+    /* Cons: May be sub-optimal for application code.                  */
+    /*******************************************************************/
+    var report1      = document.getElementById('report1'),
+        report_dual1 = document.getElementById('report_dual1');
+
+    Event.on('show1','click', function (e) {
+        Event.stopEvent(e); // Cancel link click
+
+        // Display the container
+        Dom.removeClass('container1','hide');
+
+        // Instantiate the Sliders
+        Ex.slider1 = Slider.getHorizSlider('slider1','thumb1',0,200);
+        
+        Ex.dual1 = Slider.getHorizDualSlider('dual1','min1','max1',200);
+
+        // One last DualSlider patch to support background clicks when min or
+        // max Slider is locked
+        Ex.dual1.maxSlider.onMouseDown = function (e) {
+            if (Ex.dual1.minSlider.isLocked()) {
+                Ex.dual1._handleMouseDown(e);
+            } else {
+                Event.stopEvent(e);
+            }
+        };
+
+        Ex.slider1.subscribe('change', function (v) {
+            report1.innerHTML = v;
+        });
+        Ex.dual1.subscribe('change', function (ds) {
+            report_dual1.innerHTML = ds.minVal + ' - ' + ds.maxVal;
+        });
+
+        // Immediately report values (on 'ready' event for DualSlider)
+        report1.innerHTML = Ex.slider1.getValue();
+        Ex.dual1.subscribe('ready',function () {
+            report_dual1.innerHTML = Ex.dual1.minVal + ' - ' + Ex.dual1.maxVal;
+        });
+
+        // Remove the unhide link
+        this.parentNode.removeChild(this);
+    });
+
+
+
+    /*******************************************************************/
+    /* Solution #2: Reset internal references on container display     */
+    /* Pros: getValue reports correctly immediately after reset,       */
+    /*       correctly fixes DualSlider state and UI.                  */
+    /* Cons: getValue reports NaN until displayed+reset, Extra code in */
+    /*       display handler.  May as well instantiate on display.     */
+    /*******************************************************************/
+    var report2      = document.getElementById('report2'),
+        report_dual2 = document.getElementById('report_dual2');
+
+    // Instantiate Slider
+    Ex.slider2 = YAHOO.widget.Slider.getHorizSlider('slider2','thumb2',0,200);
+
+
+    // Instantiate DualSlider
+    Ex.dual2 = YAHOO.widget.Slider.getHorizDualSlider('dual2','min2','max2',200);
+
+    // DualSlider patch for min or max Slider lock
+    Ex.dual2.maxSlider.onMouseDown = function (e) {
+        if (Ex.dual2.minSlider.isLocked()) {
+            Ex.dual2._handleMouseDown(e);
+        } else {
+            Event.stopEvent(e);
+        }
+    };
+
+    Ex.slider2.subscribe('change',function (v) {
+        report2.innerHTML = v;
+    });
+
+    Ex.dual2.subscribe('change',function (ds) {
+        report_dual2.innerHTML = ds.minVal + ' - ' + ds.maxVal;
+    });
+
+    Event.on('show2','click', function (e) {
+        Event.stopEvent(e);
+
+        // Show the container
+        Dom.removeClass('container2','hide');
+
+        // Reset internal reference points
+        Ex.slider2.thumb.resetConstraints();
+        Ex.slider2.setStartSliderState();
+
+        // Reposition the max thumb at 0, then do the same reset for each
+        // of DualSlider's Sliders
+        Dom.setStyle('max2','left','0px');
+        Ex.dual2.minSlider.thumb.resetConstraints();
+        Ex.dual2.minSlider.setStartSliderState();
+
+        Ex.dual2.maxSlider.thumb.resetConstraints();
+        Ex.dual2.maxSlider.setStartSliderState();
+        // Move thumbs to their initial values
+        Ex.dual2.setValues(0,200,true,true,false);
+
+        // Immediately report values
+        report2.innerHTML = Ex.slider2.getValue();
+        report_dual2.innerHTML = Ex.dual2.minVal + ' - ' + Ex.dual2.maxVal;
+
+        // Remove the unhide link
+        this.parentNode.removeChild(this);
+    });
+
+
+
+    /*******************************************************************/
+    /* Solution #3: Patch Slider's verifyOffset method                 */
+    /* Pros: One prototype change, no reinitialization code on display */
+    /*       for Slider instances.                                     */
+    /* Cons: getValue reports NaN until setValue or UI interaction,    */
+    /*       inadequate for DualSlider.                                */
+    /*******************************************************************/
+    var report3      = document.getElementById('report3'),
+        report_dual3 = document.getElementById('report_dual3');
+
+    Slider.prototype.verifyOffset=function(checkPos){var newPos=YAHOO.util.Dom.getXY(this.getEl());if(newPos){if(isNaN(this.baselinePos[0])){this.setThumbCenterPoint();this.thumb.startOffset=this.thumb.getOffsetFromParent(newPos);}if(newPos[0]!=this.baselinePos[0]||newPos[1]!=this.baselinePos[1]){this.thumb.resetConstraints();this.baselinePos=newPos;return false;}}return true;};
+
+    // Instantiate Slider
+    Ex.slider3 = YAHOO.widget.Slider.getHorizSlider('slider3','thumb3',0,200);
+
+    // Instantiate DualSlider
+    Ex.dual3 = YAHOO.widget.Slider.getHorizDualSlider('dual3','min3','max3',200);
+
+    // DualSlider patch for min or max Slider lock
+    Ex.dual3.maxSlider.onMouseDown = function (e) {
+        if (Ex.dual3.minSlider.isLocked()) {
+            Ex.dual3._handleMouseDown(e);
+        } else {
+            Event.stopEvent(e);
+        }
+    };
+
+    Ex.slider3.subscribe('change',function (v) {
+        report3.innerHTML = v;
+    });
+
+    Ex.dual3.subscribe('change',function (ds) {
+        report_dual3.innerHTML = ds.minVal + ' - ' + ds.maxVal;
+    });
+
+    Event.on('show3','click',function (e) {
+        Event.stopEvent(e);
+
+        Dom.removeClass('container3','hide');
+
+        // Immediately report values
+        report3.innerHTML = Ex.slider3.getValue();
+        report_dual3.innerHTML = Ex.dual3.minVal + ' - ' + Ex.dual3.maxVal;
+
+        // Remove the unhide link
+        this.parentNode.removeChild(this);
+    });
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

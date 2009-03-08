@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .markup {
+            background: #eee;
+            border: 10px solid #ccc;
+            padding: 2em;
+            overflow: hidden;
+            width: 35em;
+        }
+        .ex {
+            display: inline;
+            float: left;
+            padding: 1ex 2em;
+            border: 2px solid #ccc;
+            background: #fff;
+            margin: 1em;
+        }
+        caption {
+            color: #999;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/34202">ydn-js origin</a>
+
+<div class="markup">
+    <div class="ex">
+        <div id="tbl1"></div>
+    </div>
+    <div class="ex">
+        <div id="tbl2"></div>
+    </div>
+    <div class="ex">
+        <div id="tbl3"></div>
+    </div>
+    <div class="ex">
+        <div id="tbl4"></div>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    data = [],
+    i = 0;
+
+// Load up the array with some arbitrary data
+for (;i<5;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': 'bar:'+i,
+        'baz': 'goop'
+    };
+}
+
+// Create the DataSource
+Ex.dataSource = new YAHOO.util.DataSource(data);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['foo','bar','baz']
+};
+
+// Create a custom formatter for the checkboxes
+YAHOO.widget.DataTable.Formatter.checkbox = function (liner,rec,col,data) {
+    var name = 'sel' + this.getId().replace(/\D/g,'');
+    liner.innerHTML = '<input name="'+name+'" type="checkbox" value="'+data+'">';
+};
+
+// Add some convenience methods onto the prototype
+YAHOO.widget.DataTable.prototype.check = function (e) {
+    var cb = e.el.cells[0].getElementsByTagName('input')[0];
+    cb.checked = true;
+};
+YAHOO.widget.DataTable.prototype.uncheck = function (e) {
+    var cb = e.el.cells[0].getElementsByTagName('input')[0];
+    cb.checked = false;
+};
+YAHOO.widget.DataTable.prototype.uncheckAll = function () {
+    var name = 'sel' + this.getId().replace(/\D/g,'');
+    var checks = document.getElementsByName(name),i;
+    for (i = checks.length - 1; i >= 0; --i) {
+        checks[i].checked = false;
+    }
+};
+
+// Use a common column def for all example tables
+Ex.columnDef = [ {key:'foo', formatter: 'checkbox'},
+                 {key:'bar'},
+                 {key:'baz'} ];
+
+// Create the DataTables
+Ex.dataTable1 = new YAHOO.widget.DataTable('tbl1',Ex.columnDef,Ex.dataSource,{
+        caption : 'Single Select by Checkbox' });
+Ex.dataTable2 = new YAHOO.widget.DataTable('tbl2',Ex.columnDef,Ex.dataSource,{
+        caption : 'Multiple Select by Checkbox' });
+Ex.dataTable3 = new YAHOO.widget.DataTable('tbl3',Ex.columnDef,Ex.dataSource,{
+        caption : 'Checkbox click allows Row Selection' });
+Ex.dataTable4 = new YAHOO.widget.DataTable('tbl4',Ex.columnDef,Ex.dataSource,{
+        caption : 'Checkbox Does Not Alter Row Selection' });
+
+// DataTable #1 - Single select by checkbox
+Ex.dataTable1.subscribe('checkboxClickEvent',function (e) {
+    var select = e.target.checked;
+    this.unselectAllRows();
+    if (select) {
+        this.selectRow(e.target);
+    }
+});
+Ex.dataTable1.subscribe('rowSelectEvent',Ex.dataTable1.check);
+Ex.dataTable1.subscribe('rowUnselectEvent',Ex.dataTable1.uncheck);
+Ex.dataTable1.subscribe('unselectAllRowsEvent',Ex.dataTable1.uncheckAll);
+
+// DataTable #2 - Multiple select by checkbox
+Ex.dataTable2.subscribe('checkboxClickEvent',function (e) {
+    var op = e.target.checked ? 'selectRow' : 'unselectRow';
+    this[op](e.target);
+});
+Ex.dataTable2.subscribe('rowSelectEvent',Ex.dataTable2.check);
+Ex.dataTable2.subscribe('rowUnselectEvent',Ex.dataTable2.uncheck);
+
+// DataTable #3 - Checkbox click allows row selection
+Ex.dataTable3.subscribe('rowClickEvent',Ex.dataTable3.onEventSelectRow);
+
+// DataTable #4 - Checkbox does not alter row selection
+// returning false from a DataTable event handler will cancel bubble events
+Ex.dataTable4.subscribe('checkboxClickEvent',function () { return false; });
+Ex.dataTable4.subscribe('rowClickEvent',Ex.dataTable3.onEventSelectRow);
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

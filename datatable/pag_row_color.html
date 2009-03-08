@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+    <style type="text/css">
+        /* Remove row striping, column borders, and sort highlighting */
+        .yui-skin-sam tr.yui-dt-odd,
+        .yui-skin-sam tr.yui-dt-odd td.yui-dt-asc,
+        .yui-skin-sam tr.yui-dt-odd td.yui-dt-desc,
+        .yui-skin-sam tr.yui-dt-even td.yui-dt-asc,
+        .yui-skin-sam tr.yui-dt-even td.yui-dt-desc {
+            background-color: #fff;
+        }
+        .yui-skin-sam .yui-dt tbody td {
+            border-bottom: 1px solid #ddd;
+        }
+        .yui-skin-sam .yui-dt thead th {
+            border-bottom: 1px solid #7f7f7f;
+        }
+        .yui-skin-sam .yui-dt tr.yui-dt-last td,
+        .yui-skin-sam .yui-dt th,
+        .yui-skin-sam .yui-dt td {
+            border: none;
+        }
+
+        /* Class for inserted rows */
+        .yui-skin-sam .yui-dt tr.insert,
+        .yui-skin-sam .yui-dt tr.insert td.yui-dt-asc,
+        .yui-skin-sam .yui-dt tr.insert td.yui-dt-desc,
+        .yui-skin-sam .yui-dt tr.insert td.yui-dt-asc,
+        .yui-skin-sam .yui-dt tr.insert td.yui-dt-desc {
+            background-color: #cfc;
+        }
+
+        /* Class for deleted rows */
+        .yui-skin-sam .yui-dt tr.delete,
+        .yui-skin-sam .yui-dt tr.delete td.yui-dt-asc,
+        .yui-skin-sam .yui-dt tr.delete td.yui-dt-desc,
+        .yui-skin-sam .yui-dt tr.delete td.yui-dt-asc,
+        .yui-skin-sam .yui-dt tr.delete td.yui-dt-desc {
+            background-color: #a33;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/37131">ydn-js origin</a>
+<h1>Coloring DataTable rows.  Another solution</h1>
+<h2>Challenge:</h2>
+<p>Color DataTable rows conditionally with multiple colors across pagination and sorting.</p>
+<p><em>Note:</em> This solution is based on <a href="http://developer.yahoo.com/yui/examples/datatable/dt_row_coloring.html">this example</a>, but does not suffer from the memory leak created by <code>markRecs</code> continually growing when using <code>handleDataSourcePagination</code> &#8212;even cached data returned for the same records will have new Record instnaces created, and thus already known Records become stale in the <code>markRecs</code> collection.</p>
+
+<h2>Solution:</h2>
+<p>Create a <code>colorRows</code> method that scans the tbody rows, evaluates the pertinent data in the corresponding Record and adds a class to the row if appropriate.</p>
+
+<h2>Bonus:</h2>
+<p>Included in the source is a convenience method inspired by <a href="http://tech.groups.yahoo.com/group/ydn-javascript/message/34851">Satyam's <code>requery</code></a> function for abstracting DataSource interaction from the DataTable API.</p>
+
+<div class="markup">
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript" src="data.js"></script>
+<script type="text/javascript">
+// Convenience function for interacting with the DS through the DT
+YAHOO.widget.DataTable.prototype.load = function (req,payload,method) {
+    req = (req !== undefined) ? req :
+            this.get("lastRequest") || this.get("initialRequest");
+
+    method = method || this.get("loadMethod");
+
+    this.getDataSource().sendRequest(
+        this.get('generateRequest')(req),
+        {
+            success  : method,
+            failure  : method,
+            scope    : this,
+            argument : payload || {}
+        });
+};
+YAHOO.widget.DataTable.prototype.initAttributes = (function () {
+    var fn = YAHOO.widget.DataTable.prototype.initAttributes;
+    return function () {
+        fn.call(this);
+        this.setAttributeConfig("loadMethod",{
+            value : YAHOO.widget.DataTable.prototype.onDataReturnSetRows,
+            validator : YAHOO.lang.isFunction
+        });
+        this.setAttributeConfig("lastRequest",{
+            value : null
+        });
+        this.subscribe("dataReturnEvent",function (e) {
+            this.set("lastRequest",e.request);
+        });
+    }
+})();
+
+/****** AND HERE'S THE IMPORTANT STUFF *******/
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example');
+
+Ex.colorRows = function () {
+    var tbody = this.getTbodyEl(),
+        rows  = tbody.rows,
+        i     = rows.length,
+        ins   = [],
+        del   = [],
+        row, rec, x;
+
+    // Remove the coloring classes from any discovered rows
+    YAHOO.util.Dom.removeClass(
+        YAHOO.util.Dom.getElementsByClassName('insert','tr',tbody),'insert');
+    YAHOO.util.Dom.removeClass(
+        YAHOO.util.Dom.getElementsByClassName('delete','tr',tbody),'delete');
+
+    while (i--) {
+        row = rows[i];
+        rec = this.getRecord(row);
+        if (rec) {
+            // Insert your coloring criteria here
+            x = parseInt(rec.getData('areacode'),10);
+            if (!(x % 7)) {
+                del.push(row);
+            } else if (!(x % 13)) {
+                ins.push(row);
+            }
+        }
+    }
+
+    // Add the classes to the selected rows
+    YAHOO.util.Dom.addClass(ins,'insert');
+    // use replaceClass to trump 'insert' with 'delete' or add if not present
+    YAHOO.util.Dom.replaceClass(del,'insert','delete');
+};
+
+Ex.dataSource = new YAHOO.util.DataSource(YAHOO.example.Data.areacodes);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['areacode','state']
+};
+
+Ex.cols = [
+    { key: 'areacode', sortable: true },
+    { key: 'state', sortable: true }
+];
+
+Ex.paginator = new YAHOO.widget.Paginator({
+    rowsPerPage: 10,
+    template: '<p class="pg-nav">{FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}</p>',
+    rowsPerPageOptions: [10,15],
+    pageLinks: 5
+});
+
+Ex.conf = {
+    paginator : Ex.paginator,
+    initialLoad : false, // Delay the initial load to show off load()
+    generateRequest : function (data,dt) { return data; } // needed for load()
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',Ex.cols,Ex.dataSource,Ex.conf);
+
+// Subscribe our coloring function to the initEvent and renderEvent
+Ex.dataTable.subscribe('initEvent', Ex.colorRows);
+Ex.dataTable.subscribe('renderEvent', Ex.colorRows);
+
+// Fire off the initial load
+Ex.dataTable.load();
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

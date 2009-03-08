@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/32450">ydn-js origin</a>
+<h1>Inserting records at a specific index</h1>
+<h3>Background</h3>
+<p><code>YAHOO.widget.RecordSet</code> has a bug that causes its <code>addRecords(data,index)</code> method to insert the records in reverse order when an index is provided.  A side effect of this is that <code>DataTable</code>'s <code>addRows(data,index)</code> will not only insert the data in reverse order, but the added rows will be initially inserted in the wrong place in the tbody (ironically in the correct order). Future render events will cause the inserted rows to move to their correct index, but display in reverse order.</p>
+
+<p>Additionally, and only tangentially related, the magic meta field <code>recordInsertIndex</code>, which should be usable to identify the index at which to insert records in <code>DataTable</code>'s <code>onDataReturnInsertRows</code>, isn't used.  Instead, what should have been the backward compatible meta field <code>insertIndex</code> is used.</p>
+
+<h3>Patch and workaround</h3>
+<p>To get around the <code>recordInsertIndex</code> issue, simply change the meta key name from &quot;recordInsertIndex&quot; to &quot;insertIndex&quot;.</p>
+
+<p>A patch for the <code>addRecords</code> bug is included in the code below in verbose form.  This is the same patch, minified:</p>
+<textarea class="JScript" name="code" rows="1" cols="60">
+// Patch to support (correctly) adding multiple rows at a specific index
+YAHOO.widget.RecordSet.prototype.addRecords=function(data,index){index=YAHOO.lang.isNumber(index)&&index>=0?index:this._records.length;if(YAHOO.lang.isArray(data)){var recs=[],i,l,j=0;for(i=0,l=data.length;i<l;++i){if(YAHOO.lang.isObject(data)){recs.push(this._addRecord(data[i],index+(j++)));}}this.fireEvent('recordsAddEvent',{records:recs,data:data});return recs;}else if(YAHOO.lang.isObject(data)){var rec=this._addRecord(data,index);this.fireEvent('recordsAddEvent',{records:[data],data:data});return rec;}else{return null;}};
+</textarea>
+
+<h3>In action</h3>
+<div class="markup">
+    <div id="tbl"></div>
+    <button id="ins">Insert rows</button>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/connection/connection.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+// Patch to support (correctly) adding multiple rows at a specific index
+YAHOO.widget.RecordSet.prototype.addRecords = function (data,index) {
+    index = YAHOO.lang.isNumber(index) && index >= 0 ?
+            index : this._records.length;
+
+    if (YAHOO.lang.isArray(data)) {
+        var recs = [],i,l,j=0;
+        for (i=0,l=data.length; i<l; ++i) {
+            if (YAHOO.lang.isObject(data)) {
+                recs.push(this._addRecord(data[i],index + (j++)));
+            }
+        }
+        this.fireEvent('recordsAddEvent',{records:recs,data:data});
+        return recs;
+    } else if (YAHOO.lang.isObject(data)) {
+        var rec = this._addRecord(data,index);
+        this.fireEvent('recordsAddEvent',{records:[data],data:data});
+        return rec;
+    } else {
+        return null;
+    }
+};
+
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example');
+
+Ex.dataSource = new YAHOO.util.DataSource('insert_rows_json.php?');
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSON;
+Ex.dataSource.responseSchema = {
+    resultsList : 'results',
+    fields : ['foo','bar','baz'],
+    metaFields : {
+        recordInsertIndex:"recordInsertIndex", // Should work, but it doesn't
+        insertIndex:"insertIndex" // works
+    }
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [ {key:'foo'},
+                  {key:'bar'},
+                  {key:'baz'} ],
+                Ex.dataSource,
+                {
+                    initialRequest:"rows=first"
+                });
+
+YAHOO.util.Event.on('ins','click',function () {
+    // Response will supply recordInsertIndex:3 and insertIndex:7
+    // New records will be inserted at index 7 (counter to the documentation)
+    Ex.dataSource.sendRequest("rows=more",{
+        success:Ex.dataTable.onDataReturnInsertRows,
+        scope:Ex.dataTable
+    });
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

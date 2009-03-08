@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/36246">ydn-js origin</a>
+<h1>Splitting rows</h1>
+<p>Caveat: Since the DOM is modified, DataTable functionality is bound to break all over the place.  Since you're left with effectively a read-only table, it's probably best to just create the table and apply styling by hand.</p>
+<div class="markup">
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example');
+
+Ex.data = [
+    {a:1.1,b:1.2,c:1.3,d:1.4,e:1.5,f:1.6,g:1.7,h:1.8},
+    {a:2.1,b:2.2,c:2.3,d:2.4,e:2.5,f:2.6,g:2.7,h:2.8},
+    {a:3.1,b:3.2,c:3.3,d:3.4,e:3.5,f:3.6,g:3.7,h:3.8},
+    {a:4.1,b:4.2,c:4.3,d:4.4,e:4.5,f:4.6,g:4.7,h:4.8}
+];
+
+Ex.dataSource = new YAHOO.util.DataSource(Ex.data);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['a','b','c','d','e','f','g','h']
+};
+
+Ex.cols = [
+    { key: 'a' },
+    { key: 'b' },
+    { key: 'c' },
+    { key: 'd' },
+    { key: 'e' },
+    { key: 'f' },
+    { key: 'g' },
+    { key: 'h' }
+];
+
+Ex.conf = {
+    initialLoad : false
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',Ex.cols,Ex.dataSource,Ex.conf);
+Ex.dataTable.subscribe('initEvent',function () {
+    var tbody = Ex.dataTable.getTbodyEl(),
+        theadRow = Ex.dataTable.getTheadEl().rows[0],
+        i,tr1,tr2;
+
+    theadRow.style.display =
+    tbody.style.display = 'none';
+
+    for (i = tbody.rows.length - 1; i >= 0; --i) {
+        tr2 = tbody.rows[i];
+        tr1 = tr2.cloneNode(false);
+        tr1.appendChild(tr2.cells[0]);
+        tr1.appendChild(tr2.cells[1]);
+        tr1.appendChild(tr2.cells[2]);
+        tr1.appendChild(tr2.cells[3]);
+        tbody.insertBefore(tr1,tr2);
+    }
+
+    theadRow.removeChild(theadRow.cells[7]);
+    theadRow.removeChild(theadRow.cells[6]);
+    theadRow.removeChild(theadRow.cells[5]);
+    theadRow.removeChild(theadRow.cells[4]);
+
+    theadRow.style.display =
+    tbody.style.display = '';
+});
+
+Ex.dataSource.sendRequest(null,{
+    success : Ex.dataTable.onDataReturnSetRows,
+    scope : Ex.dataTable
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

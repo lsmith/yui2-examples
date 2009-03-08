@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/combo?2.6.0/build/datatable/assets/skins/sam/datatable.css&2.6.0/build/paginator/assets/skins/sam/paginator.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #tbl {
+            margin-top: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/42932">ydn-js origin</a>
+<h1>Filtering a local DataTable</h1>
+<p>In this example, a local data set of area codes can be filtered by entering state names (case insensitive).  A simple <code>keyup</code> listener on the input element refreshes the DataTable after a slight delay&#8212;to allow for more input.</p>
+<p>The filtering is accomplished by defining the DataSource's <code>doBeforeCallback</code> hook and replacing the results array in the response.</p>
+<div class="markup">
+    <label for="filter">Filter by state:</label> <input type="text" id="filter" value="">
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/element/element-beta-min.js&2.6.0/build/datasource/datasource-min.js&2.6.0/build/datatable/datatable-min.js&2.6.0/build/paginator/paginator-min.js"></script>
+<!--script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datasource/datasource.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datatable/datatable.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/paginator/paginator.js"></script-->
+<script type="text/javascript" src="data.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example');
+
+Ex.dataSource = new YAHOO.util.DataSource(YAHOO.example.Data.areacodes,{
+    responseType : YAHOO.util.DataSource.TYPE_JSARRAY,
+    responseSchema : {
+        fields : ['areacode','state']
+    },
+    doBeforeCallback : function (req,raw,res,cb) {
+
+        // This is the filter function
+
+        var data     = res.results || [],
+            filtered = [],
+            i,l;
+        
+        if (req) {
+            req = req.toLowerCase();
+            for (i = 0, l = data.length; i < l; ++i) {
+                if (!data[i].state.toLowerCase().indexOf(req)) {
+                    filtered.push(data[i]);
+                }
+            }
+            res.results = filtered;
+        }
+
+        return res;
+    }
+});
+
+Ex.cols = [
+    { key: 'areacode', sortable: true },
+    { key: 'state', sortable: true }
+];
+
+Ex.paginator = new YAHOO.widget.Paginator({
+    rowsPerPage   : 10,
+    pageLinks     : 5,
+    alwaysVisible : false
+});
+
+Ex.conf = {
+    paginator : Ex.paginator
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',Ex.cols,Ex.dataSource,Ex.conf);
+
+Ex.filterTimeout = null;
+Ex.updateFilter  = function () {
+    Ex.filterTimeout = null;
+
+    Ex.dataSource.sendRequest(YAHOO.util.Dom.get('filter').value,{
+        success : Ex.dataTable.onDataReturnInitializeTable,
+        failure : Ex.dataTable.onDataReturnInitializeTable,
+        scope   : Ex.dataTable,
+        argument: Ex.dataTable.getState()
+    });
+};
+
+YAHOO.util.Event.on('filter','keyup',function (e) {
+    clearTimeout(Ex.filterTimeout);
+    setTimeout(Ex.updateFilter,600);
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

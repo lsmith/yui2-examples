@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Adding/Removing divs based on Slider action</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .wrapper {
+            overflow: hidden;
+            height: 6em;
+        }
+        .x {
+            display: inline;
+            float: left;
+            border: 3px solid #ccc;
+            background: #bb9;
+            margin: 1em;
+            height: 3em;
+            line-height: 3em;
+            text-align: center;
+            width: 3em;
+        }
+        .hide {
+            display: none;
+        }
+
+        #bg {
+            height: 28px;
+            width: 217px;
+            background: url(http://developer.yahoo.com/yui/examples/slider/assets/bg-h.gif) no-repeat 7px 0;
+            position: relative;
+            margin-left: 10em;
+        }
+        #t {
+            height: 28px;
+            width: 17px;
+            position: absolute;
+        }
+        .dp-highlighter {
+            margin-top: 2em;
+        }
+    </style>
+</head>
+<body>
+<h1>Showing/Hiding elements based on Slider movement</h1>
+<div class="markup">
+    <div class="wrapper">
+        <p class="x">1</p>
+        <p class="x">2</p>
+        <p class="x">3</p>
+        <p class="x">4</p>
+        <p class="x">5</p>
+        <p class="x">6</p>
+    </div>
+
+    <div id="bg">
+        <div id="t"><img src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" height="21" width="17"></div>
+    </div>
+</div>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/utilities/utilities.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/slider/slider-min.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var els = YAHOO.util.Dom.getElementsByClassName('x','p');
+
+var slideRange = 200;
+var threshold = Math.ceil(slideRange/els.length);
+
+var slider = YAHOO.widget.Slider.getHorizSlider('bg','t',0,slideRange);
+
+slider.subscribe('change',function (newOffset) {
+    var showHowMany = Math.ceil((slideRange - newOffset) / threshold);
+    var hideList = els.slice(0,els.length - showHowMany),
+        showList = els.slice(els.length - showHowMany);
+
+    YAHOO.util.Dom.addClass(hideList,'hide');
+    YAHOO.util.Dom.removeClass(showList,'hide');
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js" ></script>
+</body>
+</html>

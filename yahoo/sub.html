@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal .9em/1.3 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        h2 {
+            border-top: 1px dotted #ccc;
+        }
+        em {
+            font-style: normal;
+            font-weight: bold;
+            background: #222;
+            color: #fff;
+            padding: 0 .5ex;
+        }
+        #from em, #a_from em {
+            color: #700;
+            background: #ddd;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/29625">ydn-js origin</a>
+<div class="markup">
+<h3>Source text</h3>
+<p id="from">Lorem <em>{ipsum}</em> dolor <em>{sit amet}</em>, <em>{consecteteur}</em> adipiscing elit. Morbi commodo, <em>{ipsum}</em> sed pharetra gravida, orci magna rhoncus neque, id pulvinar odio lorem non turpis. Nullam <em>{sit amet}</em> <em>{enim}</em>. Suspendisse id velit <em>{vitae}</em> ligula volutpat condimentum. Aliquam erat volutpat. Sed quis velit. Nulla facilisi. Nulla libero. Vivamus pharetra posuere sapien. Nam <em>{consecteteur}</em>.
+
+Sed aliquam, nunc eget euismod ullamcorper, lectus nunc ullamcorper orci, fermentum bibendum <em>{enim}</em> nibh eget <em>{ipsum}</em>. Donec porttitor ligula eu dolor. Maecenas <em>{vitae}</em> nulla consequat libero cursus venenatis. Nam magna <em>{enim}</em>, accumsan eu, blandit sed, blandit a, eros.</p>
+
+<input type="button" id="sub" value="Substitute">
+
+<h3>YAHOO.lang.substitute(src,obj)</h3>
+<p id="to">Click Substitute</p>
+
+<h3>YAHOO.lang.substitute(src,empty_obj,func)</h3>
+<p id="to_with_func">Click Substitute</p>
+
+<h3>sprintf(src,obj)</h3>
+<p id="to_sprintf">Click Substitute</p>
+
+<h2>Using array input</h2>
+<p id="a_from">Lorem <em>{0}</em> dolor sit amet, <em>{2}</em> adipiscing elit. Morbi commodo, <em>{0}</em> sed pharetra gravida, orci magna rhoncus neque, id pulvinar odio lorem non turpis. Nullam sit amet <em>{3}</em>. Suspendisse id velit <em>{1}</em> ligula volutpat condimentum. Aliquam erat volutpat. Sed quis velit. Nulla facilisi. Nulla libero. Vivamus pharetra posuere sapien. Nam <em>{2}</em>. Sed aliquam, nunc eget euismod ullamcorper, lectus nunc ullamcorper orci, fermentum bibendum <em>{3}</em> nibh eget <em>{0}</em>. Donec porttitor ligula eu dolor. Maecenas <em>{1}</em> nulla consequat libero cursus venenatis. Nam magna <em>{3}</em>, accumsan eu, blandit sed, blandit a, eros.</p>
+
+<input type="button" id="sub_array" value="Substitute">
+
+<h3>YAHOO.lang.substitute(src,obj)</h3>
+<p id="a_to">Click Substitute</p>
+
+<h3>YAHOO.lang.substitute(src,empty_obj,func)</h3>
+<p id="a_to_with_func">Click Substitute</p>
+
+<h3>sprintf(src,obj)</h3>
+<p id="a_to_sprintf">Click Substitute</p>
+</div>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript">
+(function () {
+    var Ev = YAHOO.util.Event,
+        Dom = YAHOO.util.Dom,
+        vals = {
+            //ipsum : 'IPSUM',
+            consecteteur : 'CONSECTETEUR',
+            'sit amet' : 'SIT AMET',
+            enim : 'ENIM',
+            vitae : 'VITAE'
+        },
+        val_array = ['IPSUM','VITAE','CONSECTETEUR'], //,'ENIM'],
+        sprintf = function (str,o) {
+            return str.replace(/{([\w\-\s]+)}/g, function (x,k) {
+                return (k in o) ? o[k] : '';
+            });
+        };
+
+
+    Ev.on('sub','click',function (e) {
+        Dom.get('to').innerHTML = YAHOO.lang.substitute(
+            Dom.get('from').innerHTML, vals);
+
+        Dom.get('to_with_func').innerHTML = YAHOO.lang.substitute(
+            Dom.get('from').innerHTML,{},
+            function (k,v,x) {
+                return (vals[k] === undefined) ? '' : vals[k];
+            }
+        );
+
+        Dom.get('to_sprintf').innerHTML = sprintf(
+            Dom.get('from').innerHTML, vals);
+    });
+
+    Ev.on('sub_array','click',function (e) {
+        Dom.get('a_to').innerHTML = YAHOO.lang.substitute(
+            Dom.get('a_from').innerHTML, val_array);
+
+        Dom.get('a_to_with_func').innerHTML = YAHOO.lang.substitute(
+            Dom.get('a_from').innerHTML,[],
+            function (k,v,x) {
+                return (val_array[k] === undefined) ? '' : val_array[k];
+            }
+        );
+
+        Dom.get('a_to_sprintf').innerHTML = sprintf(
+            Dom.get('a_from').innerHTML, val_array);
+    });
+})();
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

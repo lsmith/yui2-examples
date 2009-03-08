@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+    <style type="text/css">
+        #tbl2 { margin-top: 1em; }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/37621">ydn-js origin</a>
+<h1>Linking DataTables</h1>
+<h2>Challenge</h2>
+<p>Update a second DataTable in response to a row click of a primary DataTable.</p>
+<h2>Solution</h2>
+<p>Subscribe to the primary table's <code>rowClickEvent</code> with a function that calls the second DataTable's DataSource's <code>sendRequest</code> with data pertinent to get the related data.</p>
+<p>In this example, all data is stored in the same object, and the detail table's uses a function-type DataSource that pulls the details from the appropriate row of the data collection.  It could just as easily be an XHR DataSource and the <code>sendRequest</code> would need to pass the appropriate url completion string as the first param.</p>
+<div class="markup" id="example">
+    <div id="tbl1"></div>
+    <div id="tbl2"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.5.2/build/yahoo-dom-event/yahoo-dom-event.js&2.5.2/build/element/element-beta-min.js&2.5.2/build/datasource/datasource-beta-min.js&2.5.2/build/datatable/datatable-beta-min.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    DataSource = YAHOO.util.DataSource,
+    DataTable  = YAHOO.widget.DataTable,
+    data = [
+        {first:"Bob", last:"Smith", courses: [
+            {id:"abc101",credits:2,name:"World Alphabets"},
+            {id:"ubw420",credits:4,name:"Underwater basket weaving"},
+            {id:"mat997",credits:4,name:"Real number theory"}]},
+        {first:"Kai", last:"Chan", courses: [
+            {id:"js201",credits:3,name:"Closures and advanced scoping in JavaScript"},
+            {id:"wdd101",credits:4,name:"Beginning web design"}]},
+        {first:"Raphael", last:"Nadal", courses: [
+            {id:"ten999",credits:6,name:"Tennis: Smashing backhands"},
+            {id:"eco101",credits:2,name:"How to get free lunch"},
+            {id:"gt540",credits:3,name:"Game Theory in sports"}]}
+    ];
+
+Ex.dataSource1 = new DataSource(data, {
+                    responseType : DataSource.TYPE_JSARRAY,
+                    responseSchema : { fields : ['first','last'] }
+                 });
+
+Ex.dataSource2 = new DataSource(function (req) {return data[req|0].courses;}, {
+                    responseType : DataSource.TYPE_JSARRAY,
+                    responseSchema : { fields : ['id','credits','name'] }
+                 });
+
+Ex.dataTable1 = new DataTable('tbl1',[{key:'first'},{key:'last'}],
+                    Ex.dataSource1,{
+                        caption: "Students"
+                    });
+Ex.dataTable2 = new DataTable('tbl2',[{key:'id'},{key:'name'},{key:'credits'}],
+                    Ex.dataSource2, {
+                        caption: "Student's Courses"
+                    });
+
+Ex.dataTable1.subscribe('rowMouseoverEvent', Ex.dataTable1.onEventHighlightRow);
+Ex.dataTable1.subscribe('rowMouseoutEvent', Ex.dataTable1.onEventUnhighlightRow);
+Ex.dataTable1.subscribe('rowClickEvent', function (e) {
+    // Single selet this row
+    this.unselectAllRows();
+    this.selectRow(e.target);
+
+    // Update the courses table
+    Ex.dataSource2.sendRequest(this.getRecordIndex(e.target),{
+        success: Ex.dataTable2.onDataReturnInitializeTable,
+        failure: Ex.dataTable2.onDataReturnInitializeTable,
+        scope: Ex.dataTable2
+    });
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

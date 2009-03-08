@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/combo?2.6.0/build/datatable/assets/skins/sam/datatable.css&2.6.0/build/paginator/assets/skins/sam/paginator.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        body {
+            font: normal 100%/1.4 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #submitted {
+            margin-top: 1em;
+            border: 2px solid #ccc;
+            padding: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/">ydn-js origin</a>
+<div class="markup">
+    <form id="the_form" action="#">
+        <p>Other form elements here</p>
+        <div id="tbl"></div>
+
+        <input type="hidden" id="areacode" name="areacode" value="">
+        <input type="submit" value="submit" id="go">
+    </form>
+    <div id="submitted"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/element/element-beta-min.js&2.6.0/build/datasource/datasource-min.js&2.6.0/build/datatable/datatable-min.js&2.6.0/build/paginator/paginator-min.js"></script>
+<script type="text/javascript" src="data.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex    = YAHOO.namespace('example'),
+    Event = YAHOO.util.Event,
+    Dom   = YAHOO.util.Dom;
+
+Ex.checked = {};
+
+Ex.dataSource = new YAHOO.util.DataSource(YAHOO.example.Data.areacodes,{
+    responseType : YAHOO.util.DataSource.TYPE_JSARRAY,
+    responseSchema : {
+        fields : ['areacode','state']
+    }
+});
+
+Ex.cols = [
+    { key: 'areacode', sortable: true },
+    { key: 'state', sortable: true },
+    { label : 'X', formatter :
+        function (cell,rec,col,data) {
+            var acode = rec.getData('areacode');
+            cell.innerHTML = '<input type="checkbox" value="'+acode+'"'+
+                (Ex.checked[acode] ? ' checked="checked">' : '>');
+        }
+    }
+];
+
+Ex.paginator = new YAHOO.widget.Paginator({
+    rowsPerPage: 10,
+    pageLinks: 5
+});
+
+Ex.conf = {
+    paginator : Ex.paginator
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',Ex.cols,Ex.dataSource,Ex.conf);
+
+Ex.dataTable.subscribe('initEvent',function () { Ex.checked = {}; });
+Ex.dataTable.subscribe('checkboxClickEvent',function (o) {
+    var acode = o.target.value;
+    if (o.target.checked) {
+        Ex.checked[acode] = true;
+    } else {
+        delete Ex.checked[acode];
+    }
+});
+
+Event.on('the_form','submit',function (e) {
+    var acodes = [], code;
+
+    for (code in Ex.checked) {
+        if (Ex.checked.hasOwnProperty(code)) {
+            acodes.push(code);
+        }
+    }
+    acodes.sort();
+
+    Dom.get('areacode').value = acodes.join(',');
+
+    // No need to stop the event if you mean to submit the form
+    Event.stopEvent(e);
+    
+    Dom.get('submitted').innerHTML = acodes.join(',');
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

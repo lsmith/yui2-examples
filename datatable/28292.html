@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Double click vs Column sort click</title>
+	<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/fonts/fonts.css">
+	<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+</head>
+<body class="yui-skin-sam">
+    <h1>Dblclick vs click in thead</h1>
+    <p>This example illustrates how to facilitate a header row supporting both a click event to sort by column as well as a dblclick event to do some other behavior.</p>
+    <div id="TableArea"></div>
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/utilities/utilities.js"></script>
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datasource/datasource-beta-min.js"></script>
+	<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datatable/datatable-beta.js"></script>
+
+	<script type="text/javascript">
+YAHOO.namespace("example.dblClickTest");
+
+// Prepare the data and DataSource
+YAHOO.example.dblClickTest.dataSource = new YAHOO.util.DataSource(
+    // The data
+    [
+        {
+            English: "One",
+            Russian: "&#1054;&#1076;&#1080;&#1085;",
+            Finnish: "Yksi"
+        },
+
+        {
+            English: "Two",
+            Russian: "&#1044;&#1074;&#1072;",
+            Finnish: "Kaksi"
+        },
+
+        {
+            English: "Three",
+            Russian: "&#1058;&#1088;&#1080;",
+            Finnish: "Kolme"
+        }
+    ],
+    // The config
+    {
+        responseType: YAHOO.util.DataSource.TYPE_JSARRAY,
+        responseSchema: { fields : [ "English", "Russian", "Finnish" ] }
+    }
+);
+
+// Create the elements etc when the DOM is ready
+YAHOO.util.Event.onDOMReady(function () {
+
+    var Event = YAHOO.util.Event,
+        Ex    = YAHOO.example.dblClickTest;
+
+
+	Ex.dataTable  = new YAHOO.widget.DataTable(
+        // The container element
+        "TableArea",
+        // The column definitions
+	    [
+            { key: "English", label: "English", sortable: true },
+            { key: "Russian", label: "Russian", sortable: true },
+            { key: "Finnish", label: "Finnish", sortable: true }
+        ],
+        // The DataSource
+        Ex.dataSource,
+        // The DataTable config
+        {
+            draggableColumns: true
+        }
+    );
+
+    // unsubscribe the default thead click handler
+    Ex.dataTable.unsubscribe('theadCellClickEvent',Ex.dataTable.onEventSortColumn);
+
+    // Decorate the instance with custom thead click/dblclick event handling
+    YAHOO.lang.augmentObject(Ex.dataTable, {
+        // member to keep track of the sort timeout id
+        pendingSort : null,
+
+        // Double click threshold in milliseconds
+        dblclickThreshold: 200,
+
+        // custom double click behavior
+        dblclicked : function (args) {
+            clearTimeout(this.pendingSort);
+            this.pendingSort = null;
+
+            // Do my thing
+            alert('double clicked');
+        },
+
+        // custom version of onEventSortColumn
+        onEventSortColumn : function (oArgs) {
+            // boilerplate
+            var el = this.getThEl(oArgs.target);
+            if(el && el.yuiColumnKey) {
+                var oColumn = this.getColumn(el.yuiColumnKey);
+                if(oColumn.sortable) {
+                    // don't follow the A link
+                    Event.preventDefault(oArgs.event);
+
+                    // delay the default click behavior
+                    var self = this;
+                    if (!this.pendingSort) {
+                        this.pendingSort = setTimeout(function () {
+                            //console.log('sorting');
+                            self.pendingSort = null;
+                            self.sortColumn(oColumn);
+                        },this.dblclickThreshold);
+                    }
+                }
+            }
+        }
+    },true);
+
+    // Hook up the events
+    Ex.dataTable.subscribe('theadCellClickEvent',
+        Ex.dataTable.onEventSortColumn,Ex.dataTable,true);
+	Ex.dataTable.subscribe("theadCellDblclickEvent",
+        Ex.dataTable.dblclicked,Ex.dataTable,true);
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body></html>

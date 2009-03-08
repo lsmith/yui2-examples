@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.0/build/datatable/assets/skins/sam/datatable.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.0/build/logger/assets/skins/sam/logger.css">
+</head>
+<body class="yui-skin-sam">
+<div id="tbl"></div>
+<button id="b">Update row</button>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/logger/logger.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+new YAHOO.widget.LogReader(null,{newestOnTop:false,verboseOutput:false,height:'400px'}).clearConsole();
+
+var data = [],
+    cols, // to hold the column configuration
+    ds,   // to hold the DataSource
+    dt,   // to hold the DataTable
+    r = document.getElementById('report'),
+    i = 0;
+
+// Load up the array with some arbitrary data
+for (;i<5;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': 'bar:'+i,
+        'baz': 'goop',
+        'hidden': i
+    };
+}
+
+ds = new YAHOO.util.DataSource(data);
+ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+ds.responseSchema = {
+    fields : ['foo','bar','baz','hidden']
+};
+
+cols = [ {key:'foo',sortable: true},
+         {key:'bar',sortable: true},
+         {key:'baz',sortable: true} ];
+
+dt = new YAHOO.widget.DataTable('tbl', cols, ds);
+
+YAHOO.util.Event.on('b','click',function () {
+    var recData = dt.getRecord(3).getData();
+    YAHOO.log("record data: " + YAHOO.lang.dump(recData));
+
+    recData.hidden = 123;
+
+    var rec = dt.getRecord(3);
+    YAHOO.log("record: " + YAHOO.lang.dump(rec));
+
+    dt.updateRow(rec,recData);
+    dt.render();
+
+    recData = dt.getRecord(3).getData();
+    YAHOO.log("record data: " + YAHOO.lang.dump(recData));
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

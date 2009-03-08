@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        body {
+            font: normal .77em/1.4 Arial,sans-serif;
+        }
+        .markup {
+            padding-left: 100px;
+        }
+        #ticks , #ticks li {
+            position: relative;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        #ticks {
+            height: 1ex;
+            width: 300px;
+            margin: 2em 0 0 11px;
+        }
+        #ticks li {
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-right: 1px solid #777;
+            height: 1ex;
+        }
+        #ticks li span {
+            position: absolute;
+            bottom: 1.1ex;
+            right: -1.3em;
+        }
+        #ticks li.zero span { right: -1.2em } /* some minor tweaking */
+        #ticks li.full span { right: -1.5em } /* some minor tweaking */
+
+        #ticks .quarter { width: 25%; }
+        #ticks .half    { width: 50%; }
+        #ticks .almost  { width: 75%; }
+        #ticks .full    { width: 100%; }
+
+        #bg {
+            position: relative;
+            width: 320px;
+            height: 20px;
+            border: 1px solid #777;
+            background: #eee;
+        }
+        #t {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            background: #777;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/30745">ydn-js origin</a>
+<h1>Placing tick labels</h1>
+<h3>Challenge:</h3>
+<p>Slider does not create tick marks or support labeling of tick stop locations.  Illustrate one method of placing tick marks and their respective labels.</p>
+
+<h3>Solution:</h3>
+<div class="markup">
+    <ol id="ticks">
+        <li class="zero"><span>0%</span></li>
+        <li class="quarter"><span>25%</span></li>
+        <li class="half"><span>50%</span></li>
+        <li class="almost"><span>75%</span></li>
+        <li class="full"><span>100%</span></li>
+    </ol>
+    <div id="bg">
+        <div id="t"></div>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function() {
+
+    var Ex    = YAHOO.namespace('example');
+
+    Ex.slider = YAHOO.widget.Slider.getHorizSlider('bg','t',0,300,75);
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

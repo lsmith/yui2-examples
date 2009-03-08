@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/35625">ydn-js origin</a>
+
+<div class="markup">
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/json/json.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    data = '{"recs":['+
+        '{"result":[{"variable":"?X","value":"http://www.ip-super.org/ontologies/execution-history#1"}]},'+
+        '{"result":[{"variable":"?X","value":"http://www.ip-super.org/ontologies/execution-history#2"}]},'+
+        '{"result":[{"variable":"?X","value":"http://www.ip-super.org/ontologies/execution-history#3"}]},'+
+        '{"result":[{"variable":"?X","value":"http://www.ip-super.org/ontologies/execution-history#4"}]}'+
+']}';
+
+Ex.dataSource = new YAHOO.util.DataSource(data);
+Ex.dataSource.dataType       = YAHOO.util.DataSource.TYPE_JSON;
+Ex.dataSource.responseType   = YAHOO.util.DataSource.TYPE_JSON;
+Ex.dataSource.responseSchema = {
+    resultsList : 'recs',
+    fields : [
+        'result[0].value',
+        '["result"][0]["value"]',
+        '["result"][0].value'
+    ]
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [
+                    {key:'result[0].value',label:'Value (ver 1)'},
+                    {key:'["result"][0]["value"]',label:'Value (ver 2)'},
+                    {key:'["result"][0].value',label:'Value (ver 3)'}
+                ],
+                Ex.dataSource);
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

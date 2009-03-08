@@ -1,0 +1,339 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/32669">ydn-js origin</a>
+
+<h1>Creating custom UI Components for Paginator</h1>
+<h3>Challenge</h3>
+<p>Add Paginator functionality and UI to display all records.</p>
+
+<h3>Solution 1</h3>
+<p>Create a new UI component under <code>YAHOO.widget.Paginator.ui</code> to display a link.  When the link is clicked, the Paginator's <code>rowsPerPage</code> is set to its <code>totalRecords</code> and the link replaced with a span.</p>
+<p><strong>Caveat:</strong> If the <code>RowsPerPageDropdown</code> is included in the Paginator template, it will not be able to match the new custom value of <code>rowsPerPage</code> from the <code>rowsPerPageOptions</code> array.</p>
+
+<div class="markup">
+    <button id="add1">Add Row</button>
+    <div id="tbl1"></div>
+</div>
+<p><strong>*</strong> - the code for this example is displayed at the <a href="#the_code">bottom of the page</a>.</p>
+
+<h3>Solution 2</h3>
+<p>Extend the <code>RowsPerPageDropdown</code> component to look for a rowsPerPageOptions entry &quot;all&quot; and respond to choosing that value by setting <code>rowsPerPage</code> to </code>totalRecords</code>.  An additional option is created to use when the <code>rowsPerPage</code> does not match an entry from the <code>rowsPerPageOptions</code> array.</p>
+<p><strong>Caveat:</strong> If rows are added to the DataTable, a second page will be created since <code>totalRecords</code> will be incremented, but <code>rowsPerPage</code> left at the previous value of <code>totalRecords</code>.</p>
+
+<div class="markup">
+    <button id="add2">Add Row</button>
+    <div id="tbl2"></div>
+</div>
+<p><strong>*</strong> - the code for this example is displayed at the <a href="#the_code">bottom of the page</a>.</p>
+
+<h3>Solution 3</h3>
+<p>Set the last value in <code>rowsPerPageOptions</code> to a very high number, using option text &quot;All&quot;.  Choose a number that is very unlikely to be less than the number of records you'll be displaying, or at least a number so high that the impact on the browser to display so many records would be preventative anyway.</p>
+<p><strong>Caveat:</strong> The chosen number could be less than the true <code>totalRecords</code>.  Measures can be taken to ensure the value is greater, including adjusting <code>rowsPerPageOptions</code> accordingly from within a subscriber to the DataSource's responseParseEvent.  Pragmatically speaking, this should be unnecessary.</p>
+
+<div class="markup">
+    <button id="add3">Add Row</button>
+    <div id="tbl3"></div>
+</div>
+<p><strong>*</strong> - the code for this example is displayed at the <a href="#the_code">bottom of the page</a>.</p>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+// Solution 1 - create a new UI Component in the Paginator.ui namespace
+YAHOO.widget.Paginator.ui.ShowAllLink = function (p) {
+    this.paginator = p;
+    this.construct();
+};
+
+// If the UI Component has configuration attributes, include a static init
+// method, receiving the Paginator instance as the only parameter
+YAHOO.widget.Paginator.ui.ShowAllLink.init = function (p) {
+    p.setAttributeConfig('showAllLabel', {
+        value : 'Show All',
+        validator : YAHOO.lang.isString
+    });
+    p.setAttributeConfig('showAllClass', {
+        value : 'yui-pg-showall',
+        validator : YAHOO.lang.isString
+    });
+};
+
+// The component prototype should contain at least a render method that
+// returns a node (or DocumentFragment)
+YAHOO.widget.Paginator.ui.ShowAllLink.prototype = {
+    current : null,
+    span    : null,
+    link    : null,
+
+    construct : function () {
+        // When totalRecords or rowsPerPerPage changes, update the UI
+        this.paginator.subscribe('totalRecordsChange',this.update,this,true);
+        this.paginator.subscribe('rowsPerPageChange',this.update,this,true);
+
+        // When myPaginator.destroy() is called, destroy this instance  UI
+        this.paginator.subscribe('beforeDestroy',this.destroy,this,true);
+    },
+
+    // Build the link and span elements to use for the UI of this instance.
+    // Return whichever node is appropriate given the Paginator's current state
+    render : function (id_base) {
+        var p = this.paginator,
+            c = p.get('showAllClass'),
+            label = p.get('showAllLabel');
+
+        this.link = document.createElement('a');
+        this.link.id = id_base + 'showall-link';
+        this.link.href = '#';
+
+        this.span = document.createElement('span');
+        this.span.id = id_base + 'showall-span';
+
+        this.link.className = this.span.className = c;
+        this.link.innerHTML = this.span.innerHTML = label;
+
+        this.initEvents();
+
+        this.update();
+
+        return this.current;
+    },
+
+    // Add event listeners
+    initEvents : function () {
+        YAHOO.util.Event.on(this.link,'click',this.onClick,this,true);
+    },
+    
+    // Update the UI in response to Paginator state changes
+    update : function (e) {
+        if (e && e.prevValue === e.newValue) {
+            return;
+        }
+
+        var p   = this.paginator,
+            old = this.current;
+            par = old ? old.parentNode : null,
+
+        this.current = p.get('rowsPerPage') >= p.get('totalRecords') ?
+                        this.span : this.link;
+
+        if (par) {
+            par.replaceChild(this.current, old);
+        }
+    },
+
+    // Handle the link click
+    onClick : function (e) {
+        YAHOO.util.Event.stopEvent(e);
+
+        this.paginator.setRowsPerPage(this.paginator.get('totalRecords'));
+    },
+
+    // Unhook listeners and remove the displayed node
+    destroy : function () {
+        YAHOO.util.Event.purgeElement(this.link,true);
+        if (this.current && this.current.parentNode) {
+            this.current.parentNode.removeChild(this.current);
+        }
+        this.link = this.span = null;
+    }
+};
+</script>
+
+<script type="text/javascript">
+// Solution 2 - extend the current RowsPerPageDropdown
+YAHOO.widget.Paginator.ui.NewRowsPerPageDropdown = function (p) {
+    // Chain the constructor
+    this.constructor.superclass.constructor.call(this,p);
+    this.construct();
+};
+
+// Chain the static init, then add some additional configuration
+YAHOO.widget.Paginator.ui.NewRowsPerPageDropdown.init = function (p) {
+    YAHOO.widget.Paginator.ui.RowsPerPageDropdown.init(p);
+    p.setAttributeConfig('rowsPerPageChooseLabel',{
+        value : ' --- ',
+        validator : YAHOO.lang.isString
+    });
+    p.setAttributeConfig('rowsPerPageAllLabel',{
+        value : 'All',
+        validator : YAHOO.lang.isString
+    });
+};
+
+// Extend Paginator.ui.RowsPerPageDropdown, adding some new members/methods
+// and overriding some.
+YAHOO.lang.extend(YAHOO.widget.Paginator.ui.NewRowsPerPageDropdown,
+                  YAHOO.widget.Paginator.ui.RowsPerPageDropdown,{
+    // OPTION node to include to account for changes in totalRecords leaving
+    // the current rowsPerPage value for "All" not matching the new
+    // totalRecords value
+    choose : null,
+
+    // Additional instance construction logic
+    construct : function () {
+        this.paginator.subscribe('totalRecordsChange',this.rebuild,this,true);
+    },
+
+    // Build the choose OPTION, then chain to the superclass render
+    render : function (id_base) {
+        this.choose = document.createElement('option');
+        this.choose.value = '';
+        this.choose.innerHTML = this.paginator.get('rowsPerPageChooseLabel');
+
+        return this.constructor.superclass.render.call(this,id_base);
+    },
+
+    // Override rebuild to include the all and choose OPTIONS
+    rebuild : function (e) {
+        if (e && e.prevValue === e.newValue) {
+            return;
+        }
+
+        var isVal   = YAHOO.lang.isValue,
+            isString= YAHOO.lang.isString,
+            p       = this.paginator,
+            sel     = this.select,
+            df      = document.createDocumentFragment(),
+            options = p.get('rowsPerPageOptions'),
+            opt_tmp = document.createElement('option'),
+            hasAll  = false,
+            i,l,node,opt,val,label;
+
+        for (i=0,l=options.length; i<l; ++i) {
+            node  = opt_tmp.cloneNode(false);
+            opt   = options[i];
+            val   = isVal(opt.value) ? opt.value : opt;
+            label = isVal(opt.text)  ? opt.text : opt;
+
+            if (isString(val) && val.toLowerCase() === 'all') {
+                val = p.get('totalRecords');
+                label = p.get('rowsPerPageAllLabel');
+                hasAll = true;
+            }
+
+            node.value = val;
+            node.innerHTML = label;
+
+            df.appendChild(node);
+        }
+
+        if (hasAll) {
+            df.insertBefore(this.choose,df.firstChild || null);
+        }
+        
+        sel.innerHTML = '';
+
+        sel.appendChild(df);
+
+        this.update();
+    }
+
+});
+
+</script>
+
+<script type="text/javascript">
+// No new code for Solution 3
+</script>
+
+<script type="text/javascript">
+// Consume the new Paginator.ui components in the Pagintor's template config
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    data = [],
+    i = 0;
+
+// Load up the array with some arbitrary data
+for (;i<21;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': 'bar:'+i,
+        'baz': 'goop'
+    };
+}
+
+Ex.dataSource = new YAHOO.util.DataSource(data);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['foo','bar','baz']
+};
+
+// Solution 1
+Ex.dataTable1 = new YAHOO.widget.DataTable('tbl1',
+                [ {key:'foo',sortable: true},
+                  {key:'bar',sortable: true},
+                  {key:'baz',sortable: true} ],
+                Ex.dataSource,
+                {
+                    paginator : new YAHOO.widget.Paginator({
+                        rowsPerPage    : 5,
+                        rowsPerPageOptions : [5,10,15],
+                        template : "{PreviousPageLink} {PageLinks} {NextPageLink} {RowsPerPageDropdown} {ShowAllLink}"
+                    })
+                });
+
+// Solution 2
+Ex.dataTable2 = new YAHOO.widget.DataTable('tbl2',
+                [ {key:'foo',sortable: true},
+                  {key:'bar',sortable: true},
+                  {key:'baz',sortable: true} ],
+                Ex.dataSource,
+                {
+                    paginator : new YAHOO.widget.Paginator({
+                        rowsPerPage    : 5,
+                        rowsPerPageOptions : [5,10,15,'all'],
+                        template : "{PreviousPageLink} {PageLinks} {NextPageLink} {NewRowsPerPageDropdown} {ShowAllLink}"
+                    })
+                });
+
+// Solution 3
+Ex.dataTable3 = new YAHOO.widget.DataTable('tbl3',
+                [ {key:'foo',sortable: true},
+                  {key:'bar',sortable: true},
+                  {key:'baz',sortable: true} ],
+                Ex.dataSource,
+                {
+                    paginator : new YAHOO.widget.Paginator({
+                        rowsPerPage    : 5,
+                        rowsPerPageOptions : [5,10,15, {value:100000000,text:'All'}],
+                        template : "{PreviousPageLink} {PageLinks} {NextPageLink} {RowsPerPageDropdown}"
+                    })
+                });
+
+function addRow(e) {
+    YAHOO.util.Event.preventDefault(e);
+    if (/(\d)/.test(this.id)) {
+        Ex['dataTable'+RegExp.$1].addRow({foo:i,bar:'bar:'+i,baz:'NEW'});
+        ++i;
+    }
+}
+YAHOO.util.Event.on('add1','click',addRow);
+YAHOO.util.Event.on('add2','click',addRow);
+YAHOO.util.Event.on('add3','click',addRow);
+
+});
+</script>
+<h2 id="the_code">Markup and code for all solutions</h2>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

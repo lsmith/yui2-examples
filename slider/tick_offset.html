@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.5.2/build/logger/assets/skins/sam/logger.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        .c {
+            width: 30em;
+            border: 3px solid #ccc;
+            margin: 0 auto;
+        }
+        #bg {
+            position: relative;
+            height: 28px;
+            width: 228px;
+            background: url(http://developer.yahoo.com/yui/examples/slider/assets/bg-fader.gif) 5px 0 no-repeat;
+        }
+        #t {
+            position: absolute;
+            top: 4px;
+            Xleft: 100px;
+        }
+        .big {
+            height: 0;
+            width: 100px;
+            background: #f00;
+            margin: 2em auto;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<div class="c">
+    <div id="bg">
+        <div id="t"><img src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif" alt="slider thumb"></div>
+    </div>
+    <button id="bandaid">Add workaround</button>
+</div>
+<div id="big" class="big"></div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/animation/animation.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/slider/slider.js"></script>
+<script type="text/javascript">
+(function () {
+// Patch to enforce disabled backgrounds ignoring drag events
+// (Not related to the bug illustrated on this page)
+YAHOO.widget.Slider.prototype.onDrag=function(e){if(!this.isLocked()&&this.backgroundEnabled){this.moveThumb(YAHOO.util.Event.getPageX(e),YAHOO.util.Event.getPageY(e),true,true);this.fireEvents();}};
+
+var bandaid = function () {
+    var xy = YAHOO.util.Dom.getXY(this.getEl()),
+        t  = this.thumb;
+
+    if (xy && this.baselinePos[0] != xy[0] || this.baselinePos[1] != xy[1]) {
+        // Reset the background
+        this.setInitPosition();
+        this.baselinePos = xy;
+
+        // Reset the thumb
+        t.initPageX = this.initPageX + t.startOffset[0];
+        t.initPageY = this.initPageY + t.startOffset[1];
+        t.deltaSetXY = [-this.initPageX,-this.initPageY];
+        t.resetConstraints(); 
+    }
+};
+
+YAHOO.util.Event.onDOMReady(function () {
+
+    var Ex = YAHOO.namespace('example'),
+        big = document.getElementById('big');
+        
+    Ex.slider = YAHOO.widget.Slider.getHorizSlider('bg','t',0,200,20);
+
+    // Grow/shrink a div's height in accordance with value changes
+    Ex.slider.subscribe('change',function (val) {
+        big.style.height = (val*10)+'px';
+    });
+
+    // Apply the patch in response to a button click
+    YAHOO.util.Event.on('bandaid','click',function (e) {
+        YAHOO.util.Event.stopEvent(e);
+
+        // Apply bandaid
+        YAHOO.widget.Slider.prototype.verifyOffset = bandaid; 
+
+        // Reset thumb position
+        Ex.slider.baselinePos = [NaN,NaN];
+        Ex.slider.setValue(Ex.slider.getValue());
+    });
+
+});
+
+})();
+</script>
+<!--
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+-->
+</body>
+</html>

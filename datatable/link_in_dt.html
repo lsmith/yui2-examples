@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/datatable/assets/skins/sam/datatable.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/container/assets/skins/sam/container.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/button/assets/skins/sam/button.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/28670">ydn-js origin</a>
+
+<ul>
+    <li>All links are set with href="http://www.yahoo.com/"</li>
+    <li>Column foo is wired correctly and throws no errors.</li>
+    <li>Column bar will throw an error before attempting to prevent the link's default behavior.</li>
+    <li>Column baz uses Event.preventDefault before throwing a JavaScript error.</li>
+</ul>
+
+<div class="markup">
+    <div id="tbl"></div>
+    <div id="dialog"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/utilities/utilities.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/button/button-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/container/container-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datasource/datasource-beta-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datatable/datatable-beta-min.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    Yu = YAHOO.util,
+    Yw = YAHOO.widget;
+
+//////////////////////////////////////////////////////////
+// Set up only one SimpleDialog for shared consumption
+//////////////////////////////////////////////////////////
+var ok = function () {
+    this.hide();
+    alert("OK!");
+};
+
+var cancel = function () {
+    this.hide();
+};
+
+Ex.dialog = new Yw.SimpleDialog('dialog',{
+    width : '20em',
+    fixedcenter : true,
+    modal : true,
+    visible : false,
+    buttons : [
+        { text: 'OK',     handler: ok,     isDefault: true },
+        { text: 'Cancel', handler: cancel }
+    ]
+});
+Ex.dialog.render();
+
+
+//////////////////////////////////////////////////////////
+// Set up the DataTable
+//////////////////////////////////////////////////////////
+var data = [],
+    i = 0;
+
+// Load up the array with some arbitrary data
+for (;i<14;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': 'bar:'+i,
+        'baz': 'goop'
+    };
+}
+
+Ex.dataSource = new Yu.DataSource(data);
+Ex.dataSource.responseType = Yu.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['foo','bar','baz']
+};
+
+// Set up some custom formatters.  DO NOT include inline event handlers in
+// the generated markup (see linkClickEvent subscription below)
+Yw.DataTable.Formatter.goodLink = function (cell,row,col,data) {
+    cell.innerHTML = '<a href="http://www.yahoo.com/" class="good-link">' + data + '</a>';
+};
+Yw.DataTable.Formatter.badLink = function (cell,row,col,data) {
+    cell.innerHTML = '<a href="http://www.yahoo.com/" class="bad-link">' + data + '</a>';
+};
+Yw.DataTable.Formatter.subtleBadLink = function (cell,row,col,data) {
+    cell.innerHTML = '<a href="http://www.yahoo.com/" class="subtle-bad-link">' + data + '</a>';
+};
+
+Ex.dataTable = new Yw.DataTable('tbl',
+    [ {key:'foo', formatter: 'goodLink'},
+      {key:'bar', formatter: 'badLink'},
+      {key:'baz', formatter: 'subtleBadLink'} ],
+    Ex.dataSource,
+    {
+        paginator : new Yw.Paginator({
+            rowsPerPage    : 5
+        })
+    });
+
+// linkClickEvent is fired whenever any link in the DataTable is clicked
+Ex.dataTable.subscribe('linkClickEvent',function (oArgs) {
+    // Links with class good-link will open the SimpleDialog.
+    if (Yu.Dom.hasClass(oArgs.target,'good-link')) {
+        Ex.dialog.setBody(oArgs.target.innerHTML);
+        Ex.dialog.show();
+        Yu.Event.preventDefault(oArgs.event);
+
+    // Links with class bad-link will throw a js error, then attempt to prevent
+    // the default link behavior of following the link.  The error will stop
+    // execution and allow the link behavior to continue unaltered.
+    } else if (Yu.Dom.hasClass(oArgs.target,'bad-link')) {
+        throw new Error("The link WILL be followed");
+        Yu.Event.preventDefault(oArgs.event);
+
+    // Calling preventDefault BEFORE an error is thrown will still prevent the
+    // the link from being followed.
+    } else if (Yu.Dom.hasClass(oArgs.target,'subtle-bad-link')) {
+        Yu.Event.preventDefault(oArgs.event);
+        throw new Error("The link will NOT be followed");
+    }
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

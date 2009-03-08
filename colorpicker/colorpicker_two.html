@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.6.0/build/colorpicker/assets/skins/sam/colorpicker.css">
+    <style type="text/css" class="highlight-ignore">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+    <style type="text/css">
+        body {
+            font: normal 83%/1.4 Arial, sans-serif;
+        }
+        .example h2 {
+            color: #555;
+            text-align: center;
+            margin-bottom: 0;
+            text-transform: uppercase;
+        }
+        form {
+            width: 775px;
+            border: 5px solid #ccc;
+            margin: 0 auto;
+            padding: 1em;
+            overflow: hidden;
+        }
+        fieldset {
+            display: inline;
+            float: left;
+            width: 335px;
+            height: 250px;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        fieldset {
+            border: 1ex solid #555;
+            border-width: 1ex 0 0 0;
+            margin-left: 2em;
+        }
+        legend {
+            color: #555;
+            font-size: 1.4em;
+        }
+        legend input {
+            border: 1px dotted #ccc;
+            color: #555;
+            font-size: inherit;
+            width: 4em;
+        }
+        #fg-picker, #bg-picker {
+            height: 125px;
+            position: relative;
+        }
+        #sample {
+            border: 1px dotted #ccc;
+            clear: left;
+            font-size: 2em;
+            margin: 0 auto;
+            padding: 1em;
+            width: 200px;
+        }
+
+        .yui-skin-sam .example .yui-picker-controls {
+            display: none;
+        }
+
+        /* Hack for IE6 png transparency */
+        *html .yui-picker-bg {
+            filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='http://yui.yahooapis.com/2.6.0/build/colorpicker/assets/picker_mask.png', sizingMethod='scale');
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/37291">ydn-js origin</a>
+<h1>Using multiple ColorPickers on a page</h1>
+<div class="markup example">
+    <form action="#">
+        <fieldset>
+            <legend>Foreground color #
+                <input type="text" id="fg" name="fg" value="000000" maxlength="6"></legend>
+            <div id="fg-picker"></div>
+        </fieldset>
+        <fieldset>
+            <legend>Background color #
+                <input type="text" id="bg" name="bg" value="FFFFFF" maxlength="6"></legend>
+            <div id="bg-picker"></div>
+        </fieldset>
+
+        <h2>Sample</h2>
+        <p id="sample">Lorem ipsum dolor sit amet.</p>
+    </form>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/animation/animation-min.js&2.6.0/build/dragdrop/dragdrop-min.js&2.6.0/build/slider/slider-min.js&2.6.0/build/element/element-beta-min.js&2.6.0/build/colorpicker/colorpicker-min.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+    var ColorPicker = YAHOO.widget.ColorPicker,
+        Color       = YAHOO.util.Color,
+        CAnim       = YAHOO.util.ColorAnim,
+        Event       = YAHOO.util.Event,
+        KeyListener = YAHOO.util.KeyListener,
+
+        copy = YAHOO.lang.merge,
+
+        fgInput = document.getElementById('fg'),
+        bgInput = document.getElementById('bg'),
+        sample  = document.getElementById('sample'),
+
+        fgPicker, bgPicker,
+        conf = {
+        showcontrols    : false,
+        images : {
+            PICKER_THUMB : 'http://yui.yahooapis.com/2.6.0/build/colorpicker/assets/picker_thumb.png',
+            HUE_THUMB    : 'http://yui.yahooapis.com/2.6.0/build/colorpicker/assets/hue_thumb.png'
+        }
+    };
+
+    fgPicker = new ColorPicker('fg-picker',copy(conf));
+    bgPicker = new ColorPicker('bg-picker',copy(conf));
+
+    // Subscribe to rgbChange on each to update the input in the legend
+    // and the sample
+    function update(input, style, e) {
+        var before = Color.rgb2hex.apply(Color,e.prevValue),
+            after  = Color.rgb2hex.apply(Color,e.newValue),
+            animConf = {};
+
+        input.value = after;
+        animConf[style] = { from: before, to: after };
+
+        new CAnim(input, {backgroundColor:{from:'#ff9',to:'#fff'}},2).animate();
+        new CAnim(sample, animConf, .3).animate();
+    }
+
+    fgPicker.subscribe('rgbChange',function (e) {
+        update(fgInput,'color',e);
+    });
+
+    bgPicker.subscribe('rgbChange',function (e) {
+        update(bgInput,'backgroundColor',e);
+    });
+
+    // set the colors to match the inputs (this breaks IE if done in thread)
+    setTimeout(function () {
+        fgPicker.setValue(Color.hex2rgb(fgInput.value));
+        bgPicker.setValue(Color.hex2rgb(bgInput.value));
+    },1000);
+
+    // Trap for enter key in the inputs
+    Event.on(fgInput,'keydown',function (e) { 
+        if (e.keyCode === 13) {
+            Event.stopEvent(e);
+            fgPicker.setValue(Color.hex2rgb(this.value));
+        }
+    });
+
+    Event.on(bgInput,'keydown',function (e) { 
+        if (e.keyCode === 13) {
+            Event.stopEvent(e);
+            bgPicker.setValue(Color.hex2rgb(this.value));
+        }
+    });
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

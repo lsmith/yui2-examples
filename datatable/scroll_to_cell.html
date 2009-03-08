@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #tbl {
+            width: 30em;
+            height: 10.75em;
+            *height: 11em;
+            overflow: auto;
+            padding: 1px 0;
+            border-left: 1px solid #777;
+            border-right: 1px solid #777;
+        }
+        .yui-dt td div.yui-dt-liner {
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/30390">ydn-js origin</a>
+
+<h1>Scrolling a container to ensure the cell is in view</h1>
+
+<p>Clicking a cell that is partly obscured will scroll the container to bring the cell into full view.</p>
+
+<div class="markup">
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datatable/datatable-beta.js"></script>
+
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    data = [],
+    i = 0;
+
+// Load up the array with some arbitrary data
+for (;i<5;++i) {
+    data[i] = {
+        'col1': i,
+        'col2': 'col 2: '+i,
+        'col3': 'col 3: '+i,
+        'col4': 'col 4: '+i,
+        'col5': 'col 5: '+i,
+        'col6': 'col 6: '+i,
+        'col7': 'col 7: '+i,
+        'col8': 'col 8: '+i,
+        'col9': 'col 9: '+i
+    };
+}
+
+Ex.dataSource = new YAHOO.util.DataSource(data);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['col1','col2','col3','col4','col5','col6','col7','col8','col9']
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [ {key:'col1'},
+                  {key:'col2'},
+                  {key:'col3'},
+                  {key:'col4'},
+                  {key:'col5'},
+                  {key:'col6'},
+                  {key:'col7'},
+                  {key:'col8'},
+                  {key:'col9'} ],
+                Ex.dataSource,
+                {
+                    selectionMode : 'singlecell'
+                });
+
+Ex.dataTable.subscribe('cellMouseoverEvent',Ex.dataTable.onEventHighlightCell);
+Ex.dataTable.subscribe('cellMouseoutEvent',Ex.dataTable.onEventUnhighlightCell);
+Ex.dataTable.subscribe('cellClickEvent',function (e) {
+    var Dom = YAHOO.util.Dom,
+        w   = e.target.offsetWidth,
+        t   = Dom.get('tbl'),
+        tleft = Dom.getX(t),
+        cleft = Dom.getX(e.target);
+
+    if (cleft < tleft) {
+        t.scrollLeft -= tleft - cleft;
+    } else if (cleft + w > tleft + t.offsetWidth) {
+        t.scrollLeft += cleft - tleft + w - t.offsetWidth + 1; // +1 for border
+    }
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

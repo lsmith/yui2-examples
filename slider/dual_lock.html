@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal .9em/1.3 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .markup {
+            margin: 1em 0 1em 10em;
+        }
+        #slider {
+            background: url(http://developer.yahoo.com/yui/examples/slider/assets/bg-v.gif) no-repeat 3px 0;
+            height: 224px;
+            width: 30px;
+            position: relative;
+        }
+        #min, #max {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 15px;
+            background: #700;
+        }
+        #max {
+            background: #070;
+        }
+        .markup label {
+            display: block;
+            margin-top: 2em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/29621">ydn-js origin</a>
+
+<h1>Locking one of the thumbs in a DualSlider</h1>
+<h3>Challenge:</h3>
+<p>Support locking one of the DualSlider's thumbs at its current position while allowing the other thumb to move within the remaining range.</p>
+
+<h3>Solution:</h3>
+<p>DualSlider is a combination of two <code>YAHOO.widget.Slider</code>s that share the same background element.  These <code>Slider</code>s are accessible via <code>myDualSlider.minSlider</code> and <code>myDualSlider.maxSlider</code>.  Use the <code>lock</code> and <code>unlock</code> methods on one or both of these to lock the respective thumb.</p>
+<p><strong>Note:</strong> there is a bug in 2.5.1 <code>DualSlider</code> that causes the calculation of the distance between thumbs to be off for vertical <code>DualSlider</code>s when the thumbs are not square.  A patch is included inline. <strong>Also</strong> there are some bugs in 2.5.1 with respect to slider-background click behavior when one of the thumbs is locked.  Patches for these are also included inline.</p>
+<div class="markup">
+    <div id="slider">
+        <div id="min"></div>
+        <div id="max"></div>
+    </div>
+    <label for="lock"><input type="checkbox" id="lock" value="1"> Lock top thumb</label>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
+<script type="text/javascript">
+// Patch to support vertical DualSlider with thumbs wider than they are tall
+YAHOO.widget.DualSlider.prototype.updateValue=function(silent){var min=this.minSlider.getValue(),max=this.maxSlider.getValue(),changed=false;if(min!=this.minVal||max!=this.maxVal){changed=true;var mint=this.minSlider.thumb,maxt=this.maxSlider.thumb,dim=this.isHoriz?'x':'y';var thumbInnerWidth=this.minSlider.thumbCenterPoint[dim]+this.maxSlider.thumbCenterPoint[dim];var minConstraint=Math.max(max-thumbInnerWidth-this.minRange,0);var maxConstraint=Math.min(-min-thumbInnerWidth-this.minRange,0);if(this.isHoriz){minConstraint=Math.min(minConstraint,maxt.rightConstraint);mint.setXConstraint(mint.leftConstraint,minConstraint,mint.tickSize);maxt.setXConstraint(maxConstraint,maxt.rightConstraint,maxt.tickSize);}else{minConstraint=Math.min(minConstraint,maxt.bottomConstraint);mint.setYConstraint(mint.leftConstraint,minConstraint,mint.tickSize);maxt.setYConstraint(maxConstraint,maxt.bottomConstraint,maxt.tickSize);}}this.minVal=min;this.maxVal=max;if(changed&&!silent){this.fireEvent("change",this);}};
+
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example');
+
+Ex.dualSlider = YAHOO.widget.Slider.getVertDualSlider('slider','min','max',208);
+
+// Patch to select the unlocked Slider if one is locked
+Ex.dualSlider.selectActiveSlider = function (e) {
+    var minLocked = this.minSlider.isLocked(),
+        maxLocked = this.maxSlider.isLocked();
+
+    if (minLocked && !maxLocked) {
+        this.activeSlider = this.maxSlider;
+    } else if (!minLocked && maxLocked) {
+        this.activeSlider = this.minSlider;
+    } else {
+        YAHOO.widget.DualSlider.prototype.selectActiveSlider.call(this,e);
+    }
+};
+
+// Patch to support background clicks when minSlider is locked
+Ex.dualSlider.maxSlider.onMouseDown = function (e) {
+    if (Ex.dualSlider.minSlider.isLocked()) {
+        Ex.dualSlider._handleMouseDown(e);
+    } else {
+        YAHOO.util.Event.stopEvent(e);
+    }
+};
+
+YAHOO.util.Event.on('lock','click', function (e) {
+    // Call minSlider.lock() or minSlider.unlock() based on the checkbox state
+    Ex.dualSlider.minSlider[this.checked ? 'lock' : 'unlock']();
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

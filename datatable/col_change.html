@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        body {
+            font: normal .9em/1.4 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #modes {
+            display: inline;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        #modes li {
+            display: inline;
+            padding-right: 1em;
+        }
+        h4 {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/31498">ydn-js origin</a>
+<h1>Changing columns in a server side DataTable</h1>
+<h3>Challenge</h3>
+<p>Create a single DataTable, but support multiple column configurations per a managed &quot;viewing mode&quot;.</p>
+
+<h3>Solution</h3>
+<p>Create one DataSource with field declarations for all possible columns. Create a state collection for the various viewing modes containing the appropriate column configuration for that mode.  Use <code>YAHOO.util.Cookie</code> to remember the last state across page refreshes.  Create a custom method to manually handle the DataSource interaction, passing the mode in the request payload for storage in a custom <code>doBeforeLoadData</code> method on the DataTable.  In this method, use the DataTable methods <code>_initColumnSet</code> and <code>_initTheadEls</code> to refresh the DataTable ColumnSet object and header display.</p>
+
+<div class="markup">
+    <div id="tbl"></div>
+    <h4>Viewing mode</h4>
+    <ul id="modes">
+        <li><a class="view_profit" href="#">Profits</a></li>
+        <li><a class="view_past_due" href="#">Past Due</a></li>
+        <li><a class="view_appointment" href="#">Appointments</a></li>
+    </ul>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/connection/connection.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/json/json.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/cookie/cookie-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example');
+Ex.mode = {
+    'profit' : {
+        cols : [
+            {key:'name',sortable:true},
+            {key:'profit',sortable:true,formatter:'currency'}
+        ]
+    },
+    'past_due' : {
+        cols : [
+            {key:'name',sortable:true},
+            {key:'profit',sortable:true,formatter:'currency'},
+            {key:'due_date',sortable:true}
+        ]
+    },
+    'appointment' : {
+        cols : [
+            {key:'name',sortable:true},
+            {key:'appointment',sortable:true}
+        ]
+    }
+};
+Ex.currentMode = YAHOO.util.Cookie.get('mode') || 'profit';
+
+// Custom method to handle the DataSource interaction
+Ex.refreshTable = function (mode) {
+    Ex.dataSource.sendRequest('mode='+escape(mode), {
+        success : Ex.dataTable.onDataReturnInitializeTable,
+        scope : Ex.dataTable,
+        argument : {
+            mode : mode // send the mode for cookie on successful response
+        }
+    });
+};
+
+Ex.dataSource = new YAHOO.util.DataSource('data.php?');
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSON;
+Ex.dataSource.responseSchema = {
+    resultsList : 'results',
+    fields : ['name','profit','due_date','appointment']
+};
+
+// Instantiate the DataTable with initialLoad set to false because we need
+// to pass the mode through the DataSource's sendRequest
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                    Ex.mode[Ex.currentMode].cols,
+                    Ex.dataSource,
+                    {
+                        initialLoad : false
+                    });
+
+Ex.dataTable.doBeforeLoadData = function (req,res,payload) {
+    var mode = payload.mode || Ex.currentMode;
+
+    if (mode != Ex.currentMode) {
+        Ex.currentMode = mode;
+        YAHOO.util.Cookie.set('mode',mode);
+
+        // Update ColumnSet
+        Ex.dataTable._initColumnSet(Ex.mode[mode].cols);
+        // Update the thead
+        Ex.dataTable._initTheadEls();
+    }
+
+    // Return true to indicate that it is ok to process the data
+    return true;
+};
+
+// Initial load of the DataTable, per the last view mode
+Ex.refreshTable(Ex.currentMode);
+
+
+// Hook up the event listener to change mode on the link clicks
+YAHOO.util.Event.on('modes','click',function (e) {
+    var el = YAHOO.util.Event.getTarget(e);
+    if (/view_(profit|past_due|appointment)/.test(el.className)) {
+        YAHOO.util.Event.stopEvent(e);
+        Ex.refreshTable(RegExp.$1);
+    }
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

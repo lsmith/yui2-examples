@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal .77em/1.4 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #marks {
+            margin-left: 10px;
+            line-height: 5px;
+            height: 5px;
+            font-size: 5px;
+            overflow: hidden;
+            border-left: 1px solid #555;
+            position: relative;
+        }
+        .mark {
+            border-right: 1px solid #555;
+            width: 0;
+            overflow: hidden;
+            position: absolute;
+            left: 0;
+        }
+        #bg {
+            position: relative;
+            background: #ddd;
+            border: 1px solid #777;
+            width: 320px;
+            height: 20px;
+            margin-bottom: 1em;
+        }
+        #t {
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            background: #777;
+        }
+        #ticks {
+            font-weight: bold;
+        }
+        label {
+            margin-right: 1em
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/30520">ydn-js origin</a>
+
+<div class="markup">
+    <div id="marks"></div>
+    <div id="bg"><div id="t"></div></div>
+    <label><span id="ticks">3</span> Ticks</label>
+        <input type="button" id="up" value="+">
+        <input type="button" id="down" value="-">
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function() {
+
+    var Ex    = YAHOO.namespace('example'),
+        Dom   = YAHOO.util.Dom,
+        Event = YAHOO.util.Event,
+        marks = Dom.get('marks'),
+        ticks = Dom.get('ticks'),
+        width = 300;
+
+    Ex.drawMarks = function () {
+        marks.innerHTML = '';
+
+        var i = 1,
+            l = parseInt(ticks.innerHTML,10),
+            w = Math.floor(width / l),
+            offset = 0,
+            m;
+
+        for (; i <= l; ++i) {
+            m = document.createElement('span');
+            m.className = 'mark';
+            m.style.paddingLeft = (i*w)+'px';
+            m.innerHTML = '&nbsp;';
+            marks.appendChild(m);
+        }
+    };
+
+    Ex.updateSliderTicks = function () {
+        var i = parseInt(ticks.innerHTML,10),
+            w = Math.floor(width / i);
+
+        //Ex.slider.thumb.setXTicks(Ex.slider.thumb.initPageX, w)
+        Ex.slider.thumb.setXConstraint(
+            Ex.slider.thumb.leftConstraint,
+            Ex.slider.thumb.rightConstraint,
+            w);
+
+        Ex.drawMarks();
+    };
+
+    Ex.slider = YAHOO.widget.Slider.getHorizSlider('bg','t',0,width,100);
+    Ex.drawMarks();
+
+    Event.on('up','click', function () {
+        ticks.innerHTML = parseInt(ticks.innerHTML,10) + 1;
+        Ex.updateSliderTicks();
+        Ex.slider.setValue(Ex.slider.getValue());
+    });
+    Event.on('down','click', function () {
+        ticks.innerHTML = Math.max(1,parseInt(ticks.innerHTML,10) - 1);
+        Ex.updateSliderTicks();
+        Ex.slider.setValue(Ex.slider.getValue());
+    });
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal .8em/1.3 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .markup table {
+            border: 1px solid #777;
+            border-collapse: collapse;
+        }
+        .markup td, .markup th {
+            border: 1px solid #777;
+            padding: .25em 1ex;
+            text-align: left;
+        }
+        .markup thead {
+            background: #eee;
+            border-bottom: 2px solid #333;
+        }
+        .markup tfoot {
+            background: #def;
+        }
+        .xml {
+            width: 90%;
+            height: 175px;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/29408">ydn-js origin</a>
+<div class="markup">
+    <div id="target"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js" ></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/connection/connection-min.js" ></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+YAHOO.util.Connect.asyncRequest('GET','tfoot/data.xml',{
+    success : function (o) {
+        var cols  = o.responseXML.getElementsByTagName('cols')[0],
+            data  = o.responseXML.getElementsByTagName('rec'),
+            fdata = o.responseXML.getElementsByTagName('foot')[0],
+            
+            d     = document,
+            tmpl  = {},
+            el    = function (n,p) {
+                n = (tmpl[n] || (tmpl[n] = d.createElement(n))).cloneNode(true);
+                return p ? p.appendChild(n) : n;
+            },
+            table = el('table'),
+            thead = el('thead',table),
+            tfoot = el('tfoot',table),
+            tbody = el('tbody',table),
+            tr    = el('tr',thead),
+            i=0,l=cols.attributes.length,
+            j=0,jl=data.length;
+
+        // THEAD
+        for (;i<l;++i) {
+            el('th',tr).innerHTML = cols.getAttribute('col'+(i+1));
+        }
+
+        // create row template
+        tmpl.row = el('tr');
+        for (i=0;i<l;++i) {
+            el('td',tmpl.row);
+        }
+
+        // TFOOT
+        tr = el('row',tfoot);
+        for (i=0;i<l;++i) {
+            tr.cells[i].innerHTML = fdata.getAttribute('col'+(i+1));
+        }
+
+        // TBODY
+        for (;j<jl;++j) {
+            tr = el('row',tbody);
+            for (i=0;i<l;++i) {
+                tr.cells[i].innerHTML = data[j].getAttribute('col'+(i+1));
+            }
+        }
+
+        d.getElementById('target').appendChild(table);
+
+        // display example xml
+        el('h2',d.body).innerHTML = 'XML';
+        var xml = el('textarea',d.body);
+        xml.className = 'xml';
+        xml.value = o.responseText;
+    },
+    failure : function (o) {
+        if (!YAHOO.util.Connect.isCallInProgress(o)) {
+            alert('Connection error');
+        }
+    }
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

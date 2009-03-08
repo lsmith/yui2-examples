@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<stuff>
+    <cols col1="First Name" col2="Last Name" col3="Age"/>
+    <dataset>
+        <rec col1="John" col2="Wayne" col3="101"/>
+        <rec col1="Frank" col2="Herbert" col3="88"/>
+        <rec col1="Herman" col2="Melville" col3="189"/>
+        <rec col1="Ricky" col2="Schroder" col3="38"/>
+    </dataset>
+    <foot col1="FOOT COL1" col2="FOOT COL2" col3="FOOT COL3"/>
+</stuff>

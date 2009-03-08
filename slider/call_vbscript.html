@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal 87.5%/1.4 Arial, Helvetica, sans-serif;
+        }
+        h2 em {
+            font-style: normal;
+            text-transform: caps;
+            font-weight: bold;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #bg {
+            background: url(http://developer.yahoo.com/yui/examples/slider/assets/bg-h.gif) 5px 0 no-repeat;
+            height: 28px;
+            position: relative;
+            width: 228px;
+        }
+        #t {
+            cursor: default;
+            position: absolute;
+            top: 4px;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/35935">ydn-js origin</a>
+<h1>Calling VBScript from YUI</h1>
+<p>In this example, we create a simple VBScript function to show an info box, then subscribe to a Slider's <code>slideEnd</code> event to call the function.</p>
+<h2><em>This page will only work in Internet Explorer</em></h2>
+<p><strong>CAVEATS</strong>:</p>
+<ol>
+    <li>VBScript is a proprietary technology and only supported in Internet Explorer.  It is not recommended to create functionality in VBScript on any site that may be viewed by other browsers.  Since even in a locked down corporate intranet environment, there is often the case that users may prefer non-IE browsers, this essentially means <em>every site</em>.  VBScript is therefore not a recommended technology for site scripting.</li>
+    <li>Since the info box halts the browser, there may be an issue with Slider's internal state management if the interruption is fired from directly inside the <code>slideEnd</code> event handler.  So the VBScript function is called from inside a <code>setTimeout</code>.</li>
+</ol>
+
+<div class="markup">
+    <div id="bg"><img id="t" src="http://developer.yahoo.com/yui/examples/slider/assets/thumb-n.gif"></div>
+</div>
+
+<script language="VBScript">
+' VBScript function
+Function makeMsgBox(title,msg)
+    makeMsgBox = MsgBox(msg,64,title)
+End Function
+</script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/slider/slider.js"></script>
+<script type="text/javascript">
+// Bug fix for disabling Background interaction
+YAHOO.widget.Slider.prototype.onMouseUp = function () {
+    this.logger.log("bg mouseup");
+    if (!this.isLocked() && !this.moveComplete && this.backgroundEnabled) {
+        this.endMove();
+    }
+};
+
+YAHOO.util.Event.onDOMReady(function () {
+    var Ex = YAHOO.namespace('example');
+    
+    Ex.slider = YAHOO.widget.Slider.getHorizSlider('bg','t',0,200);
+    Ex.slider.backgroundEnabled = false;
+    Ex.slider.subscribe('slideEnd',function () {
+        setTimeout(function () {
+            makeMsgBox("Testing","Message box content");
+        },0);
+    });
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

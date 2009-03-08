@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        tfoot fieldset {
+            background: #795089;
+            color: #fff;
+            border: none;
+            margin: 0;
+            padding: 4px 6px;
+        }
+        label {
+            display: block;
+            margin-bottom: .5ex;
+        }
+        .yui-skin-sam .yui-dt tr.mark,
+        .yui-skin-sam .yui-dt tr.mark td.yui-dt-asc,
+        .yui-skin-sam .yui-dt tr.mark td.yui-dt-desc {
+            background: #cfc;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/26307">ydn-js origin</a>
+
+<h1>Conditional row coloring</h1>
+<h3>Challenge</h3>
+<p>Highlight any number of rows based on the value in a column.  Preserve coloring across sorting.</p>
+
+<h3>Considerations</h3>
+<ul>
+    <li>Currently the row element is not provided to the cell formatter, and is not easily available until after the table is fully rendered.</li>
+    <li>Due to CSS restrictions in IE, cross browser row striping is not possible for consecutive colored rows (e.g. using a slightly darker shade of the color for the odd rows).</li>
+    <li>DataTable reuses existing <code>tr</code> elements when sorting, so the coloring class needs to be removed from the rows before and reapplied after sorting.</li>
+</ul>
+
+<h3>Solution</h3>
+<p>Use a custom formatter to cache the records that will need to have their corresponding rows colored, then apply the row coloring in a renderEvent handler.</p>
+
+<div class="markup">
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+// Create a shortcut
+var Dom = YAHOO.util.Dom;
+
+// Create a namespace to contain our stuff
+var Ex = YAHOO.namespace('example'),
+    // cache of the records to mark
+    markRecs = {},
+    data = [],
+    i = 0;
+
+// Load up an array with some arbitrary data for the DataSource
+for (;i<30;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': Math.floor(Math.random() * 1000),
+        'baz': ['frisbee','umbrella','coat','boots','cat','beach','salt','cream of wheat'][i%8]
+    };
+}
+
+// Create the DataSource
+Ex.dataSource = new YAHOO.util.DataSource(data);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['foo','bar','baz']
+};
+
+// Create a custom function to store the records needing row coloring
+YAHOO.widget.DataTable.Formatter.mark = function (cell,rec,col,data) {
+    if (data > 500) {
+        // In object hash to prevent duplication
+        markRecs[rec.getId()] = rec;
+    }
+    cell.innerHTML = data;
+};
+
+// Function to add the color class to rows
+Ex.updateMarks = function () {
+    // Clear mark class off all rows
+    Dom.removeClass(
+        Dom.getElementsByClassName('mark','tr',
+            Ex.dataTable.getTbodyEl()),
+        'mark');
+
+    // Apply mark class to identified rows
+    for (var recKey in markRecs) {
+        Dom.addClass(Ex.dataTable.getTrEl(markRecs[recKey]),'mark');
+    }
+};
+
+// Instantiate the DataTable.
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [ {key:'foo',sortable: true},
+                  {key:'bar',sortable: true, formatter: 'mark'},
+                  {key:'baz',sortable: true} ],
+                Ex.dataSource,
+                {
+                    sortedBy : {
+                        key : 'foo',
+                        dir : 'asc'
+                    },
+                    paginator : new YAHOO.widget.Paginator({rowsPerPage:10})
+                });
+
+// Set row colors initially
+Ex.updateMarks();
+
+// Add the class to the rows on renderEvent
+Ex.dataTable.subscribe('renderEvent',Ex.updateMarks);
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        iframe {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/33517">ydn-js origin</a>
+<iframe src="dt_in_iframe2.html" width="800"></iframe>
+<p>The iframe border and scrollbar widths are different between Windows and Mac OS and respective browsers.  Pay close attention to the widths set in CSS and the DataTable configuration.</p>
+<h3>iframe document CSS</h3>
+<textarea name="code" class="CSS" rows="1" cols="60">
+body { margin: 0; padding: 0; }
+.yui-dt-scrollable .yui-dt-bd {
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+#tbl table {
+    width: 779px;
+    *width: 777px;
+}
+</textarea>
+<h3>iframe document JavaScript</h3>
+<textarea name="code" class="JScript" rows="1" cols="60">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    data = [
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        },
+        {
+            no : 1,
+            species : 'Little Grebe',
+            sci_name : 'Tachybaptus ruficollis',
+            date : '24/5/2008',
+            location : 'Some location, some country, some country',
+            comment : 'test'
+        }
+    ],
+    i = 0;
+
+Ex.dataSource = new YAHOO.util.DataSource(data);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['no','species','sci_name','date','location','comment']
+};
+
+// Override the DataTable method that keeps column widths in sync between the
+// fixed header cells and data cells, accounting for minWidths
+YAHOO.widget.DataTable.prototype._syncColWidths = function () {
+    var tbl   = this._elTbody.parentNode,
+        cols  = this.getColumnSet().keys,
+        Dom   = YAHOO.util.Dom,
+        style = Dom.getStyle,
+        hold_tbl,hold,i,ths,liner,w,widths = [];
+
+    if (this.get('scrollable')) {
+        Dom.removeClass(this.getContainerEl(),YAHOO.widget.DataTable.CLASS_SCROLLABLE);
+    }
+
+    for (i = cols.length - 1; i >= 0; --i) {
+        if (!cols[i].width || cols[i].width === cols[i].minWidth) {
+            this._setColumnWidth(cols[i],'auto','visible');
+        } else {
+            widths[i] = cols[i].width;
+        }
+    }
+    hold_tbl = this._elThead.parentNode;
+    if (hold_tbl !== tbl) {
+        hold = tbl.replaceChild(this._elThead, tbl.getElementsByTagName('thead')[0]); 
+    }
+
+    ths = tbl.rows[0].getElementsByTagName('th');
+    // Once thru to store widths and verify minWidths
+    for (i = ths.length - 1; i >= 0; --i) {
+        if (cols[i].minWidth !== YAHOO.widget.Column.prototype.minWidth) {
+            liner = ths[i].firstChild;
+            w = ths[i].offsetWidth - 1 - // -1 for border
+                parseInt(style(liner,'paddingLeft'),10) -
+                parseInt(style(liner,'paddingRight'),10);
+
+            if (w < cols[i].minWidth) {
+                this._setColumnWidth(cols[i],cols[i].minWidth+'px');
+            }
+        }
+    }
+
+    // Once thru to capture auto widths
+    for (i = ths.length - 1; i >= 0; --i) {
+        if (!widths[i]) {
+            liner = ths[i].firstChild;
+            w = ths[i].offsetWidth - 1 - // -1 for border
+                parseInt(style(liner,'paddingLeft'),10) -
+                parseInt(style(liner,'paddingRight'),10);
+            widths[i] = w;
+        }
+    }
+
+    // Set all widths
+    for (i = cols.length - 1; i >= 0; --i) {
+        this._setColumnWidth(cols[i],widths[i]+'px');
+    }
+
+    tbl.replaceChild(hold,this._elThead);
+    if (hold_tbl !== tbl) {
+        hold_tbl.insertBefore(this._elThead,hold_tbl.firstChild || null);
+    }
+
+    if (this.get('scrollable')) {
+        Dom.addClass(this.getContainerEl(),YAHOO.widget.DataTable.CLASS_SCROLLABLE);
+    }
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [ {key:'no',sortable:true},
+                  {key:'species',sortable:true},
+                  {key:'sci_name',label:'Scientific Name',sortable:true},
+                  {key:'date',minWidth: 80,sortable:true},
+                  {key:'location',sortable:true},
+                  {key:'comment',sortable:true}],
+                Ex.dataSource,
+                {
+                    scrollable:true,
+                    width: '794px',
+                    height: '100px'
+                });
+});
+</textarea>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript">
+dp.SyntaxHighlighter.HighlightAll('code');
+</script>
+</body>
+</html>

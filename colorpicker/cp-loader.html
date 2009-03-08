@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Loading Color Picker with YUI Loader</title>
+
+<!-- css --> 
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/button/assets/skins/sam/button.css"> 
+<!-- js --> 
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.5.2/build/yuiloader-dom-event/yuiloader-dom-event.js&2.5.2/build/element/element-beta-min.js&2.5.2/build/button/button-min.js"></script> 
+
+<style type="text/css">
+	#cpContainer {position:relative;}
+</style>
+</head>
+
+<body class="yui-skin-sam">
+
+<h1>Loading Color Picker with YUI Loader</h1>
+
+	<!--BEGIN SOURCE CODE FOR EXAMPLE =============================== -->
+	
+	<!--Container for our call-to-action button-->
+<div id="cpInsertButtonContainer"></div>
+<div id="cpContainer"></div>
+
+
+<script type="text/javascript">
+
+//create a namespace object in the example namespace:
+YAHOO.namespace("example.colorpicker")
+
+//create a new object for this module:
+YAHOO.example.CPinit = function() {
+    var Event = YAHOO.util.Event,
+        picker;
+		
+	YAHOO.log("Creating Color Picker.", "info", "example");
+	picker = new YAHOO.widget.ColorPicker("cpContainer", {
+			showhsvcontrols: true,
+			showhexcontrols: true,
+			images: {
+				PICKER_THUMB: "assets/picker_thumb.png",
+				HUE_THUMB: "assets/hue_thumb.png"
+			}
+		});
+	YAHOO.log("Finished creating Color Picker.", "info", "example");
+	
+	//a listener for logging RGB color changes;
+	//this will only be visible if logger is enabled:
+	var onRgbChange = function(o) {
+		/*o is an object
+			{ newValue: (array of R, G, B values),
+			  prevValue: (array of R, G, B values),
+			  type: "rgbChange"
+			 }
+		*/
+		YAHOO.log("The new color value is " + o.newValue, "info", "example");
+	}
+	
+	//subscribe to the rgbChange event;
+	picker.on("rgbChange", onRgbChange);
+
+	//use setValue to reset the value to white:
+	Event.on("reset", "click", function(e) {
+		picker.setValue([255, 255, 255], false); //false here means that rgbChange
+												 //will fire; true would silence it
+	});
+	
+	//use the "get" method to get the current value
+	//of one of the Color Picker's properties; in 
+	//this case, we'll get the hex value and write it
+	//to the log:
+	Event.on("gethex", "click", function(e) {
+		YAHOO.log("Current hex value: " + picker.get("hex"), "info", "example"); 
+	});
+
+}
+
+
+//create our Button Instance which will trigger Loader to
+//load Color Picker and create our cps.
+YAHOO.example.buttoninit = function() {
+
+	//Create the button instance:
+	var oButton = new YAHOO.widget.Button({ 
+		id: "cpInsertButton",  
+		type: "button",  
+		label: "Click here to load ColorPicker",  
+		container: "cpInsertButtonContainer"  
+	});
+	YAHOO.log("Button created; click button to begin loading ColorPicker.", "info", "example");
+
+	//Create a handler that handles the button click;
+	//it logs the click, hides the button, then fires 
+	//the function (loaderinit) that brings in Color Picker:
+	var onButtonClick = function() {
+		YAHOO.log("Button clicked; hiding button now and loading CP", "info", "example");
+		YAHOO.util.Dom.setStyle("cpInsertButtonContainer", "display", "none");
+		YAHOO.example.loaderinit();
+	}
+	
+	//attach the handler to the Button's click event:
+	oButton.on("click", onButtonClick);
+};
+
+//Once the cpInsertButtonContainer element is on the page, we can create
+//our button instance; in this case, the onContentReady deferral is unnecessary,
+//because we're writing the element to the page before this script,
+//but in many cases the onContentReady wrapper gives you added
+//flexibility and it comes at low expense:
+YAHOO.util.Event.onAvailable("cpInsertButtonContainer", 
+								YAHOO.example.buttoninit);
+
+
+
+YAHOO.example.loaderinit = function() {
+	YAHOO.log("YAHOO.example.loaderinit firing; we'll bring in Color Picker and any missing dependencies now.", "info", "example");
+	
+	//Begin by creating a new Loader instance:
+	var loader = new YAHOO.util.YUILoader();
+	
+	//configure Loader; we'll request Color Picker plus any
+	//optional dependencies of Color Picker that aren't already on
+	//the page:
+	loader.require("colorpicker");
+	loader.loadOptional = true;
+	
+	//We can now look at the components list that Loader has
+	//calculated; this is what Loader has determined it needs
+	//to add to the page:
+	YAHOO.log("YUI components required: " + loader.sorted, "info", "example");
+	
+	
+	//When the loading is all complete, we want to initialize
+	//our Color Picker process; we can set this here or pass this
+	//in as an argument to the insert() method:
+	loader.onSuccess = YAHOO.example.CPinit;
+	
+	//We've created and configured our Loader instance;
+	//now we tell it to insert the needed components on the
+	//page:
+	loader.insert();
+	
+};
+</script>
+	
+	<!--END SOURCE CODE FOR EXAMPLE =============================== -->
+
+
+<script type='text/javascript' src='http://track2.mybloglog.com/js/jsserv.php?mblID=2007010912241462'></script>
+</body>
+</html>

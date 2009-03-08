@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.5.1/build/container/assets/skins/sam/container.css">
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.5.1/build/button/assets/skins/sam/button.css">
+    <style type="text/css">
+        body {
+            font-family: Arial,sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        label {
+            display: block;
+            margin-top: 1ex;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/28670">ydn-js origin</a>
+<div class="markup">
+    <a href="http://yahoo.com" id="x">Click this link to open a dialog</a>
+    <div id="d">
+        <div class="hd">Dialog header</div>
+        <div class="bd">
+            <form method="post" action="javascript:alert('form submitted');return false;">
+                <fieldset>
+                    <label for="txt">Set the value:</label>
+                    <input type="text" id="txt" value="">
+
+                    <label for="txt2">Set the other value:</label>
+                    <input type="text" id="txt2" value="">
+                </fieldset>
+            </form>
+        </div>
+        <div class="ft"></div>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/utilities/utilities.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/button/button-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/container/container-min.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+    var Ex = YAHOO.namespace('example');
+
+    var ok = function () {
+        alert('OK!');
+        this.hide();
+    };
+
+    var cancel = function () {
+        this.hide();
+    };
+
+    Ex.dialog = new YAHOO.widget.Dialog('d', {
+        width: '15em',
+        fixedcenter: true,
+        visible: false,
+        close: true,
+        buttons: [
+            { text: 'Submit', handler: ok, isDefault: true },
+            { text: 'Cancel', handler: cancel }
+        ]
+    });
+    Ex.dialog.render();
+
+    YAHOO.util.Event.on('x','click',function (e) {
+        YAHOO.util.Event.preventDefault(e);
+        Ex.dialog.show();
+    });
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

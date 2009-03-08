@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        tfoot fieldset {
+            background: #795089;
+            color: #fff;
+            border: none;
+            margin: 0;
+            padding: 4px 6px;
+        }
+        label {
+            display: block;
+            margin-bottom: .5ex;
+        }
+        .yui-skin-sam .yui-dt td.ok div.yui-dt-liner {
+            background: #cfc;
+        }
+        .yui-skin-sam .yui-dt tr.yui-dt-odd td.ok div.yui-dt-liner {
+            background: #cfc;
+        }
+        .yui-skin-sam .yui-dt td.mark div.yui-dt-liner {
+            background: #711;
+            color: #fff;
+        }
+        .yui-skin-sam .yui-dt tr.yui-dt-odd td.ok div.yui-dt-liner {
+            background: #ada;
+        }
+        .yui-skin-sam .yui-dt tr.yui-dt-odd td.mark div.yui-dt-liner {
+            background: #500;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/29154">ydn-js origin</a>
+
+<h1>Conditional cell highlighting</h1>
+<h3>Challenge</h3>
+<p>Add support for custom cell formatting.  Highlighting should be maintained across column sorting.  Row striping should be respected.  Support "unmarking" highlight.</p>
+
+<h3>Solution</h3>
+<p>Subscribe to the DataTable's renderEvent.  The subscribed function captures values of input fields and iterates through the table's <code>tbody</code> rows, comparing the input value against the <code>DataTable</code>'s <code>RecordSet</code> value for that cell.  Class <code>mark</code> is assigned to the cell if the <code>Record</code> data satisfies a &gt; conditional.  Otherwise, class <code>ok</code> is assigned.</p>
+<p>Highlighting and row striping is maintained via css.</p>
+
+<div class="markup">
+    <div id="tbl"></div>
+    <form id="the_form" action="javascript:false;" method="get">
+        <fieldset>
+            <label>Mark <tt>bar</tt> greater than <input type="text" id="bar_limit" value="" size="3"></label>
+            <label>Mark <tt>baz</tt> greater than <input type="text" id="baz_limit" value=""size="6"></label>
+            <input type="submit" id="mark" value="Mark cells">
+        </fieldset>
+    </form>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+// Create some shortcuts
+var Ev  = YAHOO.util.Event,
+    Dom = YAHOO.util.Dom,
+    DS  = YAHOO.util.DataSource,
+    DT  = YAHOO.widget.DataTable;
+
+// Create a namespace to contain our stuff
+var Ex = YAHOO.namespace('example'),
+    // cache the input nodes for faster access
+    bar_limit = Dom.get('bar_limit'),
+    baz_limit = Dom.get('baz_limit'),
+    data = [],
+    i = 0;
+
+// Load up an array with some arbitrary data for the DataSource
+for (;i<10;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': Math.floor(Math.random() * 1000),
+        'baz': ['frisbee','umbrella','coat','boots','cat','beach','salt','cream of wheat'][i%8]
+    };
+}
+
+// Create the DataSource
+Ex.dataSource = new DS(data);
+Ex.dataSource.responseType = DS.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['foo','bar','baz']
+};
+
+// Create a custom function to assign the ok and mark classes to the cells
+Ex.mark = function (col,val) {
+    var dTable = Ex.dataTable,
+        tbody = dTable.getTbodyEl(),
+        rows,r,colIdx,i,c;
+
+    if (tbody && dTable.getColumn(col)) {
+        colIdx = dTable.getColumn(col).getKeyIndex();
+
+        // Iterate the tbody rows
+        for (rows=tbody.rows,i=rows.length-1;i>=0;--i) {
+            r = dTable.getRecord(i);
+            c = rows[i].cells[colIdx];
+
+            if (val === null) {
+                // Clear highlighting
+                Dom.removeClass(c,'ok');
+                Dom.removeClass(c,'mark');
+            } else if (r.getData(col) > val) {
+                Dom.replaceClass(c,'ok','mark');
+            } else {
+                Dom.replaceClass(c,'mark','ok');
+            }
+        }
+    }
+};
+
+// Function to pull the input values and execute the mark function
+Ex.updateMarks = function () {
+    var val = parseInt(bar_limit.value,10);
+    Ex.mark('bar', (!isNaN(val) ? val : null));
+
+    val = baz_limit.value;
+    Ex.mark('baz',(val.length && /\S/.test(val) ? val : null));
+};
+
+// Instantiate the DataTable.  initialLoad is set to false so we can subscribe
+// to the initEvent event.  Not necessary if you are using an XHR DataSource
+// or aren't adding a tfoot (not an officially supported action)
+Ex.dataTable = new DT('tbl',
+                [ {key:'foo',sortable: true},
+                  {key:'bar',sortable: true},
+                  {key:'baz',sortable: true} ],
+                Ex.dataSource,
+                {
+                    initialLoad : false,
+                    sortedBy : {
+                        key : 'foo',
+                        dir : 'asc'
+                    }
+                });
+
+// Move the form into a table footer for fun
+Ex.dataTable.subscribe('initEvent',function () {
+    var d = document,
+        tbody = this.getTbodyEl(),
+        tfoot = d.createElement('tfoot'),
+        tr = tfoot.appendChild(d.createElement('tr')),
+        td = tr.appendChild(d.createElement('td'));
+
+    td.colSpan = 3;
+
+    td.appendChild(Dom.get('the_form'));
+
+    tbody.parentNode.insertBefore(tfoot,tbody);
+});
+
+// Subscribe our highlighting function to the renderEvent
+Ex.dataTable.subscribe('renderEvent', Ex.updateMarks);
+
+// Other miscellany.  Wire up the form events.
+Ev.on('mark','mousedown',function (e) {
+    Ev.stopEvent(e);
+    Ex.updateMarks();
+});
+Ev.on('the_form','submit',function (e) { 
+    Ev.stopEvent(e);
+    Ex.updateMarks();
+});
+
+// Send the initial request to load the DataTable since we set initialLoad false
+Ex.dataSource.sendRequest(null,{
+    success : Ex.dataTable.onDataReturnSetRows,
+    scope : Ex.dataTable
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

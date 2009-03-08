@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal .77em/1.4 Arial, sans-serif;
+        }
+        code em {
+            font-style: normal;
+            font-weight: bold;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        #bg {
+            position: relative;
+            height: 20px;
+            width: 320px;
+            border: 1px solid #555;
+            background: #eee;
+        }
+        #max, #min {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+        }
+        #min { background: #171; }
+        #max { background: #711; }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/31035">ydn-js origin</a>
+<h1>DualSlider background click aligns with inner thumb edge</h1>
+<h3>Challenge</h3>
+<p>Create a DualSlider where clicking and dragging on the background aligns the thumb to the inner edge of the min/max thumbs.</p>
+
+<h3>Solution</h3>
+<p>Override the <code>Slider</code> method <code>setThumbCenterPoint</code> to support aligning the &quot;center&quot; to an edge of the thumb.  Subscribe to the DualSlider's <code>ready</code> event to realign the thumbs to their respective inner edges.</p>
+<p><strong>Caveat:</strong> The values of the composite Sliders will still be reported as the offset from the <em>center</em> of the thumbs.</p>
+
+<div class="markup">
+    <div id="bg">
+        <div id="min"><div class='t'></div></div>
+        <div id="max"><div class='t'></div></div>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+    YAHOO.widget.Slider.prototype.setThumbCenterPoint = function (edge) {
+        var el = this.thumb.getEl(),
+            xy = {x:0,y:0};
+
+        if (el) {
+            switch (edge) {
+                case 'right' : xy.x = el.offsetWidth; // fall through
+                case 'left'  : xy.y = Math.round(el.offsetWidth/2); break;
+
+                case 'bottom': xy.y = el.offsetHeight; // fall through
+                case 'top'   : xy.x = Math.round(el.offsetHeight/2); break;
+
+                default      : xy.x = Math.round(el.offsetWidth/2);
+                               xy.y = Math.round(el.offsetHeight/2);
+            }
+        }
+
+        this.thumbCenterPoint = xy;
+    };
+
+    var s = YAHOO.widget.Slider.getHorizDualSlider('bg','min','max',300);
+    s.subscribe('ready', function () {
+        s.minSlider.setThumbCenterPoint('right');
+        s.maxSlider.setThumbCenterPoint('left');
+    });
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

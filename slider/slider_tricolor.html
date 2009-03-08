@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        body {
+            font: normal .77em/1.4 Arial, sans-serif;
+        }
+        code em {
+            font-style: normal;
+            font-weight: bold;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .slider {
+            border: 1px inset #aaa;
+            width: 221px;
+        }
+        #bg {
+            position: relative;
+            height: 20px;
+            background: #fa3;
+        }
+        #max, #min {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #min-highlight,
+        #max-highlight {
+            position: absolute;
+            top: 0;
+            height: 20px;
+        }
+        #min-highlight {
+            left: 0;
+            background: #c00;
+        }
+        #max-highlight {
+            right: 0;
+            background: #ff0;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/31035">ydn-js origin</a>
+<h1>DualSlider background segmented into three colors</h1>
+<h3>Challenge</h3>
+<p>Create a DualSlider with one color showing between the min-thumb and the far left edge, a second color between the min and max thumbs, and a third color between the max-thumb and the far right edge.
+
+<h3>Solution</h3>
+<p>include two <code>span</code> elements inside the background <code>div</code>, use CSS to place them at each edge and color them appropriately.  Subscribe to the <code>change</code> event of the constituent Sliders to update the width of the highlight elements.</p>
+
+<div class="markup">
+    <div class="slider">
+        <div id="bg">
+            <span id="min-highlight"></span>
+            <span id="max-highlight"></span>
+            <div id="min"><img src="http://developer.yahoo.com/yui/examples/slider/assets/left-thumb.png" alt="slider min-value thumb"></div>
+            <div id="max"><img src="http://developer.yahoo.com/yui/examples/slider/assets/right-thumb.png" alt="slider max-value thumb"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+    var Ex    = YAHOO.namespace('example'),
+        Dom   = YAHOO.util.Dom,
+        width = 200,
+        minHighlight = Dom.get('min-highlight'),
+        maxHighlight = Dom.get('max-highlight');
+        
+    Ex.slider = YAHOO.widget.Slider.getHorizDualSlider('bg','min','max',200);
+    Ex.slider.minSlider.subscribe('change',function (v) {
+        Dom.setStyle(minHighlight,'width',v+'px');
+    });
+    Ex.slider.maxSlider.subscribe('change',function (v) {
+        Dom.setStyle(maxHighlight,'width',(width-v)+'px');
+    });
+    /*
+    s.subscribe('ready', function () {
+        s.minSlider.setThumbCenterPoint('right');
+        s.maxSlider.setThumbCenterPoint('left');
+    });
+    */
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

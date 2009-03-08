@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.1/build/datatable/assets/skins/sam/datatable.css">
+    <style type="text/css">
+        body {
+            font: normal .9em/1.3 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/30105">ydn-js origin</a>
+<h1>Capturing and displaying nested data</h1>
+<h3>Challenge:</h3>
+<p>Create a DataTable from a DataSource that returns nested data structures.</p>
+
+<h3>Solution</h3>
+<p>Use <a href="http://developer.yahoo.com/yui/datasource/#locating_data">location key syntax</a> to pull values from nested data structures in the DataSource's <code>responseSchema.fields</code> collection.  Use a custom column formatter to render complex data in a table cell.</p>
+
+<div class="markup">
+    <div id="tbl"></div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/json/json.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex = YAHOO.namespace('example'),
+    data = [],
+    i = 0;
+
+/* Create a JSON data payload that looks like
+{
+    records : [
+        { "foo": 0, "bar": ['bar:0','a'] },
+        { "foo": 1, "bar": ['bar:1','d'] },
+        { "foo": 2, "bar": ['bar:2','j'] },
+        ...
+    ]
+}
+*/
+for (;i<10;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': ['bar:'+i,['a','b','c','d','e','f','g','h','i','j','k'][Math.ceil(Math.random() * 10)]]
+    };
+}
+var json = YAHOO.lang.JSON.stringify({records:data});
+
+Ex.dataSource = new YAHOO.util.DataSource(function () { return json });
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSON;
+
+// Set up the responseSchema fields to extract the bar array as well as
+// one of the values stored in the bar array
+Ex.dataSource.responseSchema = {
+    resultsList : 'records',
+    fields : [
+        'foo',   // basic column identifier
+        'bar',   // points to column containing array data (capture the array)
+        'bar[0]' // will extract the first value from the array bar
+    ]
+};
+
+// Create a custom formatter to handle the printing of the array data in bar
+YAHOO.widget.DataTable.Formatter.displayBar = function (cell,rec,col,data) {
+    cell.innerHTML = '<strong>'+data[0]+':</strong> '+data[1];
+};
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [ {key:'foo', sortable: true},
+                  {key:'bar', sortable: true, formatter: 'displayBar'},
+                  {key:'bar[0]', label: 'Nested'}],
+                Ex.dataSource
+                );
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

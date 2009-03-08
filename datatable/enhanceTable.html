@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/37307">ydn-js origin</a>
+<h1>Factory function for enhancing tables from markup</h1>
+<h2>Challenge</h2>
+<p>A page has several tables on it that need to be enhanced into DataTables.</p>
+<h2>Solution</h2>
+<p>Create a static factory method <code>DataTable.enhanceTable(tbl,config)</code> to encapsulate typical progressive enhancement cases.  The function replaces the <code>table</code> element with a <code>div</code> assigned the same <code>id</code> and <code>class</code> attributes and uses that div as the new DataTable's container.</p>
+<p><strong>Caveats:</strong> The function has no column level configuration available.  All columns are made sortable.  Also, it is assumed that there are no nested column headers.</p>
+
+<div class="markup">
+    <h3>Your average table of foo</h3>
+    <table id="tbl1">
+        <thead>
+            <tr>
+                <th>Foo</th>
+                <th>Bar</th>
+                <th>Baz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Foo 1</td>
+                <td>Bar 1</td>
+                <td>Baz 1</td>
+            </tr>
+            <tr>
+                <td>Foo 2</td>
+                <td>Bar 2</td>
+                <td>Baz 2</td>
+            </tr>
+            <tr>
+                <td>Foo 3</td>
+                <td>Bar 3</td>
+                <td>Baz 3</td>
+            </tr>
+            <tr>
+                <td>Foo 4</td>
+                <td>Bar 4</td>
+                <td>Baz 4</td>
+            </tr>
+            <tr>
+                <td>Foo 5</td>
+                <td>Bar 5</td>
+                <td>Baz 5</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Table of colorful shapes</h3>
+    <table id="tbl2">
+        <thead>
+            <tr>
+                <th>Color</th>
+                <th>Shape</th>
+                <th>Size</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>green</td>
+                <td>cube</td>
+                <td>small</td>
+            </tr>
+            <tr>
+                <td>blue</td>
+                <td>sphere</td>
+                <td>medium</td>
+            </tr>
+            <tr>
+                <td>purple</td>
+                <td>cone</td>
+                <td>small</td>
+            </tr>
+            <tr>
+                <td>black</td>
+                <td>taurus</td>
+                <td>large</td>
+            </tr>
+            <tr>
+                <td>red</td>
+                <td>pyramid</td>
+                <td>large</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Scrabble tiles (English)</h3>
+    <table id="tbl3">
+        <thead>
+            <tr>
+                <th>Letter</th>
+                <th>Quantity</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>(blank)</td><td>2</td><td>0</td></tr>
+            <tr><td>A</td><td>9</td><td>1</td></tr>
+            <tr><td>B</td><td>2</td><td>3</td></tr>
+            <tr><td>C</td><td>2</td><td>3</td></tr>
+            <tr><td>D</td><td>4</td><td>2</td></tr>
+            <tr><td>E</td><td>12</td><td>1</td></tr>
+            <tr><td>F</td><td>2</td><td>4</td></tr>
+            <tr><td>G</td><td>3</td><td>2</td></tr>
+            <tr><td>H</td><td>2</td><td>4</td></tr>
+            <tr><td>I</td><td>9</td><td>1</td></tr>
+            <tr><td>J</td><td>1</td><td>8</td></tr>
+            <tr><td>K</td><td>1</td><td>5</td></tr>
+            <tr><td>L</td><td>4</td><td>1</td></tr>
+            <tr><td>M</td><td>2</td><td>3</td></tr>
+            <tr><td>N</td><td>6</td><td>1</td></tr>
+            <tr><td>O</td><td>8</td><td>1</td></tr>
+            <tr><td>P</td><td>2</td><td>3</td></tr>
+            <tr><td>Q</td><td>1</td><td>10</td></tr>
+            <tr><td>R</td><td>6</td><td>1</td></tr>
+            <tr><td>S</td><td>4</td><td>1</td></tr>
+            <tr><td>T</td><td>6</td><td>1</td></tr>
+            <tr><td>U</td><td>4</td><td>1</td></tr>
+            <tr><td>V</td><td>2</td><td>4</td></tr>
+            <tr><td>W</td><td>2</td><td>4</td></tr>
+            <tr><td>X</td><td>1</td><td>8</td></tr>
+            <tr><td>Y</td><td>2</td><td>4</td></tr>
+            <tr><td>Z</td><td>1</td><td>10</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript" src="data.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex         = YAHOO.namespace('example'),
+    Dom        = YAHOO.util.Dom,
+    DataSource = YAHOO.util.DataSource,
+    DataTable  = YAHOO.widget.DataTable;
+
+DataTable.enhanceTable = function (tbl,conf) {
+    tbl = Dom.get(tbl);
+
+    if (tbl && tbl.tagName.toLowerCase() === 'table') {
+        var fields    = [],
+            container = document.createElement('div'),
+            columns   = tbl.getElementsByTagName('thead')[0],
+            dataSource, i;
+
+        if (columns) {
+            columns = columns.getElementsByTagName('th');
+            if (columns.length) {
+                for (i = columns.length - 1; i >= 0; --i) {
+                    fields[i] = {
+                        key: columns[i].innerHTML,
+                        sortable: true
+                    };
+                }
+            }
+
+            dataSource = new DataSource(tbl,{
+                responseType : DataSource.TYPE_HTMLTABLE,
+                responseSchema : { fields : fields }
+            });
+
+            container.id = tbl.id;
+            container.classname = tbl.className;
+            tbl.parentNode.replaceChild(container,tbl);
+
+            return new DataTable(container,fields,dataSource,conf);
+        }
+    }
+};
+
+Ex.fooTable = DataTable.enhanceTable('tbl1');
+Ex.shapeTable = DataTable.enhanceTable('tbl2',{
+    scrollable: true,
+    height: '5em'
+});
+Ex.scrabbleTable = DataTable.enhanceTable('tbl3', {
+    sortedBy : { key: 'Letter', dir: DataTable.SORT_DESC },
+    paginator : new YAHOO.widget.Paginator({ rowsPerPage: 7 })
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

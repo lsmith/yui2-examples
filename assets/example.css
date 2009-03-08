@@ -1,0 +1,39 @@
+body {
+    font: normal 83%/1.4 Arial, sans-serif;
+    margin-top: 0;
+    padding-top: 50px;
+}
+.origin {
+    background: #795089;
+    color: #fff;
+    display: block;
+    margin-bottom: 1em;
+    padding: 1ex;
+    position: absolute;
+    text-align: right;
+    top: 0;
+    right: 0;
+    width: 100%;
+}
+.meta {
+    background: #000;
+    color: #fff;
+    font-size: 11px;
+    left: 0;
+    line-height: 20px;
+    margin: 0;
+    padding: 1ex 0;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    width: 75px;
+    -moz-border-radius-bottomright: 15px;
+    -webkit-border-bottom-right-radius: 10px;
+}
+.meta em {
+    font-style: normal;
+    font-size: 20px;
+}
+.hide {
+    display: none;
+}

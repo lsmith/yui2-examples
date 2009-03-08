@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/combo?2.6.0/build/datatable/assets/skins/sam/datatable.css&2.6.0/build/paginator/assets/skins/sam/paginator.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .markup table {
+            border: 1px solid #aaa;
+            border-collapse: collapse;
+            font-size: 80%;
+        }
+        .markup caption {
+            margin-top: 1em;
+            padding: .5ex 0;
+            font-size: 130%;
+            color: #369;
+        }
+        .markup td {
+            border: 1px solid #aaa;
+            padding: .5ex 1ex;
+        }
+        .markup th {
+            background: #ccc;
+            border: 1px solid #aaa;
+            padding: .5ex 1ex;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/">ydn-js origin</a>
+<h1>Extracting raw data from a <code>&lt;table&gt;</code> using <code>YAHOO.util.DataSource</code></h1>
+<p>DataSource supports using a table in markup as its source of truth.  If all you need is the data from the table, you can create a &quot;pass-thru&quot; DataSource instance to leverage the DOM walking and parsing routines inside.</p>
+<p>In this example, a markup table will be parsed into an array named <code>data</code>.</p>
+<div class="markup">
+    <button type="button" id="load">Load the table data</code></button>
+    <button type="button" id="go" disabled="disabled">Get <code>data[2].amount</code></button>
+    <em id="report">(click the load button)</em>
+    <table id="accounts">
+        <caption>Table in markup with data in it</caption>
+        <thead>
+            <tr>
+                <th>Due Date</th>
+                <th>Account Number</th>
+                <th>Quantity</th>
+                <th>Amount Due</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1/23/1999</td>
+                <td>29e8548592d8c82</td>
+                <td>12</td>
+                <td>$150.00</td>
+            </tr>
+            <tr>
+                <td>5/19/1999</td>
+                <td>83849</td>
+                <td>8</td>
+                <td>$60.00</td>
+            </tr>
+            <tr>
+                <td>8/9/1999</td>
+                <td>11348</td>
+                <td>1</td>
+                <td>-$34.99</td>
+            </tr>
+            <tr>
+                <td>1/23/2000</td>
+                <td>29e8548592d8c82</td>
+                <td>10</td>
+                <td>-$1.00</td>
+            </tr>
+            <tr>
+                <td>4/28/2000</td>
+                <td>37892857482836437378273</td>
+                <td>123</td>
+                <td>$33.32</td>
+            </tr>
+            <tr>
+                <td>1/23/2001</td>
+                <td>83849</td>
+                <td>5</td>
+                <td>-$15.00</td>
+            </tr>
+            <tr>
+                <td>9/30/2001</td>
+                <td>224747</td>
+                <td>14</td>
+                <td>$56.78</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!--script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/element/element-beta-min.js&2.6.0/build/datasource/datasource-min.js&2.6.0/build/datatable/datatable-min.js&2.6.0/build/paginator/paginator-min.js"></script-->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datasource/datasource.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datatable/datatable.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/paginator/paginator.js"></script>
+<script type="text/javascript" src="data.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+// Shortcuts
+var DataSource = YAHOO.util.DataSource
+    Event = YAHOO.util.Event,
+    $     = YAHOO.util.Dom.get,
+    data  = null; // this is where the data will go
+
+// Add a new parser to DataSource to parse numbers that are prefixed with
+// currency symbols (or any other non-numeric characters)
+DataSource.Parser.currency = function (cur) {
+    if (YAHOO.lang.isString(cur)) {
+        var neg = !cur.indexOf('-');
+        cur = (neg?-1:1) * cur.slice(neg).replace(/^[^0-9.]+|,/g,'');
+    } else if (!YAHOO.lang.isNumber(cur)) {
+        return 0;
+    }
+
+    return cur;
+};
+
+Event.on('load','click',function (e) {
+
+    // Here's the pass-thru DataSource.  Instantiate and immediately call
+    // sendRequest, passing a simple assignment function as the callback's
+    // success handler
+    new DataSource($('accounts'), {
+        responseType : DataSource.TYPE_HTMLTABLE,
+        responseSchema : {
+            // Describe the object keys each record will have and what type
+            // of data to parse into the respective values
+            fields : [
+                { key: 'due',      parser: 'date' },
+                { key: 'account' },
+                { key: 'quantity', parser: 'number' },
+                { key: 'amount',   parser: 'currency' }
+            ]
+        }
+    }).sendRequest(null,{
+        success : function (req,res) {
+            data = res.results;
+        }
+    });
+    
+    // The work is done and data is populated. Update the UI to allow for
+    // referencing the data structure.
+    $('load').disabled = true;
+    $('go').disabled   = false;
+
+    $('report').innerHTML = "Table data loaded. Click the Get <code>data...</code> button.";
+});
+
+Event.on('go','click', function (e) {
+    // Proof that we have a populated data object
+    $('report').innerHTML = "data in <code>data[2].amount</code>: " +
+                            data[2].amount;
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

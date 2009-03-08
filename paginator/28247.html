@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Paginator standalone</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css">
+        .markup {
+            width: 30em;
+            border: 5px solid #ccc;
+            background: #eee;
+            margin: 1em auto;
+            text-align: center;
+        }
+        .gal img {
+            border: 5px solid #fff;
+        }
+        .yui-pg-pages {
+            display: block;
+            margin: 5px 0 3px;
+        }
+        .yui-pg-page {
+            line-height: 1.5em;
+            background: #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 2px 5px;
+            margin: 1ex 2px 0;
+            border: 1px solid #ccc;
+        }
+        .yui-pg-current-page {
+            background: #ff7;
+            border-color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="markup">
+    <div id="pg"></div>
+    <div class="gal">
+        <img id="gal_img" src="../assets/images/pumkin1.jpg" alt="The first pumpkin" width="150" height="113">
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/element/element-beta-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+    var img       = document.getElementById('gal_img'),
+        images    = [
+            {src:'../assets/images/pumkin1.jpg', alt:'The first pumpkin'},
+            {src:'../assets/images/pumkin2.jpg', alt:'The second pumpkin'},
+            {src:'../assets/images/pumkin3.jpg', alt:'The third pumpkin'}
+        ],
+        paginator = new YAHOO.widget.Paginator({
+            containers   : ['pg'],
+            rowsPerPage  : 1,
+            totalRecords : 3,
+            template     : "{PageLinks}"
+        });
+
+    paginator.subscribe('changeRequest',function (state) {
+        img.src = images[state.page - 1].src;
+        img.alt = images[state.page - 1].alt;
+
+        state.paginator.set('recordOffset',state.recordOffset);
+    });
+
+    paginator.render();
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

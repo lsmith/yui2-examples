@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.6.0/build/datatable/assets/skins/sam/datatable.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.6.0/build/paginator/assets/skins/sam/paginator.css">
+    <style type="text/css">
+        body {
+            font: normal .88em/1.4 Arial, sans-serif;
+        }
+        .markup {
+            clear: both;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 1em;
+            overflow: hidden;
+        }
+        h2 {
+            clear: both;
+        }
+        #cur {
+            width: 18em;
+            text-align: right;
+            border-bottom: 3px solid #333;
+            color: #333;
+            margin-bottom: .2em;
+        }
+        #cur span {
+            margin: 0;
+        }
+        .col {
+            width: 13em;
+            display: inline;
+            float: left;
+            padding-left: 1em;
+        }
+        #filters {
+            width: 5.8em;
+        }
+        #filters h4 {
+            margin: 0;
+            line-height: 225%;
+            border-bottom: 1px dashed #aaa;
+            color: #333;
+        }
+        #filters ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+
+<div class="markup">
+    <h3 id="cur"></h3>
+    <div class="col">
+        <div id="pag"></div>
+        <div id="tbl"></div>
+    </div>
+    <div id="filters" class="col">
+        <h4>Filter by</h4>
+        <ul>
+            <li><a href="?filter=">All</a></li>
+            <li><a href="?filter=foo">Foo</a></li>
+            <li><a href="?filter=bar">Bar</a></li>
+            <li><a href="?filter=baz">Baz</a></li>
+            <li><a href="?filter=missing">Missing</a></li>
+        </ul>
+    </div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/element/element-beta.js&2.6.0/build/datasource/datasource.js&2.6.0/build/datatable/datatable.js&2.6.0/build/paginator/paginator.js"></script>
+<!--script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datasource/datasource.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datatable/datatable.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/paginator/paginator.js"></script-->
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex    = YAHOO.namespace('example'),
+    Event = YAHOO.util.Event,
+    Dom   = YAHOO.util.Dom,
+    initialFilter = /filter=(\w*)/.test(location.search) ?  RegExp.$1 : null,
+    data  = [],
+    i = 0;
+
+// Load up the array with some arbitrary data
+for (;i<500;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': 'bar:'+i,
+        'type': ['foo','bar'][(Math.random()*2)|0]
+    };
+}
+data[9].type = data[270].type = data[284].type = data[485].type = 'baz';
+
+Ex.filter = function (type) {
+    if (!type || !type.length) {
+        return data;
+    }
+
+    var results = [];
+    for (var i=0,j=0,l=data.length; i<l ; ++i) {
+        if (data[i].type == type) {
+            results[j++] = data[i];
+        }
+    }
+    return results;
+};
+
+Ex.dataSource = new YAHOO.util.DataSource(Ex.filter);
+Ex.dataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+Ex.dataSource.responseSchema = {
+    fields : ['foo','bar','type']
+};
+
+Ex.paginator = new YAHOO.widget.Paginator({
+    containers : 'pag',
+    alwaysVisible : false,
+    template : '{FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}',
+    firstPageLinkLabel : 'First',
+    lastPageLinkLabel : 'Last',
+    previousPageLinkLabel : 'Prev',
+    nextPageLinkLabel : 'Next',
+    rowsPerPage : 10
+});
+Ex.paginator.subscribe('rendered',function () {
+    var report = new YAHOO.widget.Paginator.ui.CurrentPageReport(Ex.paginator);
+    Dom.get('cur').appendChild(report.render('my'));
+});
+
+Ex.dataTable = new YAHOO.widget.DataTable('tbl',
+                [ {key:'foo',sortable: true},
+                  {key:'bar',sortable: true},
+                  {key:'type',sortable: true} ],
+                Ex.dataSource,
+                {
+                    paginator: Ex.paginator,
+                    initialRequest : initialFilter
+                });
+
+Ex.callback = {
+    success : Ex.dataTable.onDataReturnInitializeTable,
+    failure : Ex.dataTable.onDataReturnInitializeTable,
+    scope   : Ex.dataTable
+};
+
+Event.on('filters','click',function (e) {
+    var target = Event.getTarget(e),
+        sort   = Ex.dataTable.get('sortedBy'),
+        filter;
+
+    if (target.nodeName.toLowerCase() == 'a') {
+        Event.preventDefault(e);
+
+        if (sort) {
+            // Sort the source data
+            var asc = (sort.dir.indexOf('asc') !== -1),
+                k   = sort.key;
+            data.sort(function (a,b) {
+                return a[k]===b[k]?0:(a[k]<b[k]?(asc?-1:1):(asc?1:-1));
+            });
+
+            // Pass the sort info in the payload to reset sortedBy after
+            // initializeTable clears it.
+            Ex.callback.argument = {
+                sortKey : sort.key,
+                sortDir : sort.dir
+            };
+        } else {
+            Ex.callback.argument = {};
+        }
+        filter = /filter=(\w*)/.test(target.href) ? RegExp.$1 : null;
+        Ex.dataSource.sendRequest(filter,Ex.callback);
+    }
+
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

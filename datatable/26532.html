@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.0/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
+    <style type="text/css">
+        .yui-skin-sam .yui-pg-container {
+            padding: .25em 1em;
+            margin: 0;
+            text-align: center;
+            border-top: 1px solid #7f7f7f;
+            background: #f5f5f2;
+        }
+        .yui-skin-sam .yui-dt-liner {
+            padding: 5px 30px;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/">ydn-js origin unknown</a>
+<p class="meta">YUI version <em>2.5.0</em></p>
+
+<h1>Placing Paginator in a <code>&lt;tfoot&gt;</code> element of a DataTable</h1>
+
+<div id="tbl"></div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/datasource/datasource-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.5.0/build/datatable/datatable-beta.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var data = [],
+    ds, // to hold the DataSource
+    dt, // to hold the DataTable
+    pag = document.createElement('div'), // to use as the Paginator's container
+    td, // the TD that will populate the added TFOOT
+    i = 0;
+
+// Load up the array with some arbitrary data
+for (;i<5000;++i) {
+    data[i] = {
+        'foo': i,
+        'bar': 'bar:'+i,
+        'baz': 'goop'
+    };
+}
+
+ds = new YAHOO.util.DataSource(data);
+ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+ds.responseSchema = {
+    fields : ['foo','bar','baz']
+};
+
+dt = new YAHOO.widget.DataTable('tbl',
+                [ {key:'foo',sortable: true},
+                  {key:'bar',sortable: true},
+                  {key:'baz',sortable: true} ],
+                ds,
+                {
+                    paginator : new YAHOO.widget.Paginator({
+                        containers : pag,
+                        rowsPerPage    : 10,
+                        template: "{PreviousPageLink} {CurrentPageReport} {NextPageLink}",
+                        pageReportTemplate : "{currentPage} of {totalPages}"
+                    })
+                });
+
+// Note the createTFoot method is not recommended.  Use createElement
+td = dt.getTbodyEl().parentNode.createTFoot().insertRow(-1).insertCell(-1);
+td.colSpan = 3;
+td.appendChild(pag);
+    
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

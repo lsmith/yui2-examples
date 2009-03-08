@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/combo?2.6.0/build/datatable/assets/skins/sam/datatable.css&2.6.0/build/paginator/assets/skins/sam/paginator.css">
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+        .highlight-example {
+            clear: left;
+        }
+    </style>
+    <style type="text/css">
+        h2 {
+            margin-top: 0;
+        }
+        #demo1, #demo2 {
+            float: left;
+            margin: 0 2em 2em;
+        }
+        .yui-skin-sam #demo2 .yui-dt {
+            position: relative;
+        }
+        .yui-skin-sam #demo2 .yui-dt-mask {
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/43439">ydn-js origin</a>
+<h1>Adding a &quot;disabled&quot; mask to Paginator controls</h1>
+<p><code>YAHOO.widget.Paginator</code> does not include a <code>disable</code> method, and DataTable's <code>disable</code> method only masks the table itself.  Masking the pagination controls when the DataTable is disabled can be accomplished in (at least) two ways:</p>
+<ol>
+    <li><strong>Solution #1</strong>: Add mask elements to the Paginator's containers and apply them in a similar fashion as the DataTable's mask in response to DataTable's <code>disableEvent</code>.  This involves more code than #2, but the Paginator's masks will not potentially cover other elements (if the Paginator's <code>containers</code> were configured).</li>
+    <li><strong>Solution #2</strong>: Extend the DataTable's mask to encompass the Paginator's containers.  This involves setting the DataTable container's <code>position: relative</code> and overriding the assigned mask dimensions in response to the DataTable's <code>disableEvent</code>.</li>
+</ol>
+
+<p><button type="button" id="toggle">Disable</button></p>
+
+<div id="demo1">
+    <h2>Solution #1</h2>
+    <div id="tbl1"></div>
+</div>
+<div id="demo2">
+    <h2>Solution #2</h2>
+    <div id="tbl2"></div>
+</div>
+
+<!--script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/element/element-beta-min.js&2.6.0/build/datasource/datasource-min.js&2.6.0/build/datatable/datatable-min.js&2.6.0/build/paginator/paginator-min.js"></script-->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/element/element-beta.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datasource/datasource.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datatable/datatable.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/paginator/paginator.js"></script>
+<script type="text/javascript" src="data.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.onDOMReady(function () {
+
+var Ex  = YAHOO.namespace('example'),
+    Dom = YAHOO.util.Dom;
+
+Ex.disabled = false;
+
+Ex.dataSource = new YAHOO.util.DataSource(YAHOO.example.Data.areacodes,{
+    responseType : YAHOO.util.DataSource.TYPE_JSARRAY,
+    responseSchema : {
+        fields : ['areacode','state']
+    }
+});
+
+Ex.cols = [
+    { key: 'areacode', sortable: true },
+    { key: 'state', sortable: true }
+];
+
+// SOLUTION #1 - add masks to Paginator containers
+Ex.paginator1 = new YAHOO.widget.Paginator({
+    rowsPerPage : 10,
+    pageLinks   : 5,
+    firstPageLinkLabel    : '&lt;&lt;',
+    previousPageLinkLabel : '&lt;',
+    nextPageLinkLabel     : '&gt;',
+    lastPageLinkLabel     : '&gt;&gt;'
+});
+
+Ex.paginator1.subscribe('render', function () {
+    var containers = this.getContainerNodes(),
+        mask, i, len;
+
+    for (i = 0, len = containers.length; i < len; ++i) {
+        mask = document.createElement('div');
+        mask.className = 'yui-dt-mask';
+        mask.style.display = 'none';
+        containers[i].insertBefore(mask,containers[i].firstChild);
+    }
+});
+
+Ex.dataTable1 = new YAHOO.widget.DataTable('tbl1',Ex.cols,Ex.dataSource,{
+    paginator : Ex.paginator1
+});
+
+Ex.dataTable1.subscribe('disableEvent',function () {
+    var containers = Ex.paginator1.getContainerNodes(),
+        i, len;
+
+    for (i = 0, len = containers.length; i < len; ++i) {
+        Dom.getElementsByClassName('yui-dt-mask','div',containers[i],
+            function (mask) {
+                mask.style.height = mask.parentNode.offsetHeight + 'px';
+                mask.style.width = mask.parentNode.offsetWidth + 'px';
+                mask.style.display = 'block';
+            });
+    }
+});
+Ex.dataTable1.subscribe('undisableEvent',function () {
+    var containers = Ex.paginator1.getContainerNodes(),
+        i, len;
+
+    for (i = 0, len = containers.length; i < len; ++i) {
+        Dom.getElementsByClassName('yui-dt-mask','div',containers[i],
+            function (mask) {
+                mask.style.display = 'none';
+            });
+    }
+});
+
+
+// Solution #2 - Modify the DataTable mask to encompass the pagination controls
+Ex.paginator2 = new YAHOO.widget.Paginator({
+    rowsPerPage : 10,
+    pageLinks   : 5,
+    firstPageLinkLabel    : '&lt;&lt;',
+    previousPageLinkLabel : '&lt;',
+    nextPageLinkLabel     : '&gt;',
+    lastPageLinkLabel     : '&gt;&gt;'
+});
+
+Ex.dataTable2 = new YAHOO.widget.DataTable('tbl2',Ex.cols,Ex.dataSource,{
+    paginator : Ex.paginator2
+});
+
+Ex.dataTable2.subscribe('disableEvent',function () {
+    this._elMask.style.height = this._elMask.parentNode.offsetHeight + 'px';
+    this._elMask.style.width  = this._elMask.parentNode.offsetWidth + 'px';
+});
+
+
+
+// Set up the button listener
+YAHOO.util.Event.on('toggle', 'click', function () {
+    if (Ex.disabled) {
+        Ex.dataTable1.undisable();
+        Ex.dataTable2.undisable();
+        this.innerHTML = 'Disable';
+    } else {
+        Ex.dataTable1.disable();
+        Ex.dataTable2.disable();
+        this.innerHTML = 'Enable';
+    }
+
+    Ex.disabled = !Ex.disabled;
+});
+
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>

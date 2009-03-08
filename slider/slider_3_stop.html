@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="/assets/dpSyntaxHighlighter.css">
+    <style type="text/css" class="highlight-ignore">
+        body {
+            font: normal .77em/1.4 Arial, sans-serif;
+        }
+        .origin {
+            display: block;
+            background: #795089;
+            padding: 1ex;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 1em;
+        }
+    </style>
+    <style type="text/css">
+        #slider-bg {
+            background: url(http://yui.yahooapis.com/2.6.0/build/slider/assets/bg-h.gif) no-repeat 0 0;
+            height: 28px;
+            width: 228px;
+        }
+        #slider-thumb {
+            height: 21px;
+            width: 17px;
+        }
+    </style>
+</head>
+<body>
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/45048">ydn-js origin</a>
+
+<div class="markup">
+<p>Value: <em id="slider-value">???</em></p>
+<div>
+    <div id="slider-bg" tabindex="-1" style="position:relative; top:4px;" title="Choose Timeframe">
+        <div id="slider-thumb" style="position:relative; top:4px;">
+            <img src="http://yui.yahooapis.com/2.6.0/build/slider/assets/thumb-n.gif">
+        </div>
+    </div>
+</div>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/dragdrop/dragdrop-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/slider/slider.js"></script>
+<script type="text/javascript">
+(function () {
+
+var Event = YAHOO.util.Event,
+    Dom = YAHOO.util.Dom,
+    lang = YAHOO.lang,
+    slider,
+    bg="slider-bg",
+    thumb="slider-thumb",
+    valuearea="slider-value",
+    valnode = Dom.get(valuearea);
+
+Event.onDOMReady(function() {
+    // Slider will always have a stop at the initial position (here 0), and
+    // the tick size should be calculated as range / (num_of_ticks - 1)
+    // So for 3 ticks in 200px, 200 / (3 - 1)  or 100
+    slider = YAHOO.widget.Slider.getHorizSlider(bg,thumb,0,200,100);
+
+    slider.subscribe("change", function(offsetFromStart) {
+        valnode.innerHTML = offsetFromStart+" ("+(this.getValue() / 100)+")";
+    });
+    slider.setValue(200);
+
+});
+
+})();
+</script>
+<script type="text/javascript" src="/assets/dpSyntaxHighlighter.js" ></script>
+<script type="text/javascript" src="/assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>
