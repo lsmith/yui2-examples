@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/datatable/assets/skins/sam/datatable.css">
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
+    <style type="text/css">
+    </style>
+</head>
+<body class="yui-skin-sam">
+<a class="origin" href="http://yuilibrary.com/forum/viewtopic.php?f=90&t=209&p=679#p679">forum thread</a>
+<p class="meta">YUI version <em>2.7.0</em></p>
+<h1>About JSON data with complex keys and/or nested record data</h1>
+<p>This example illustrates how to configure your DataSource and DataTable to access nested record data as well as how to access data with keys that include the dot character.</p>
+<div id="x"></div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.7.0/build/yahoo-dom-event/yahoo-dom-event.js&2.7.0/build/element/element.js&2.7.0/build/datasource/datasource.js&2.7.0/build/datatable/datatable.js"></script>
+<script type="text/javascript">
+(function () {
+
+    var Demo = YAHOO.namespace('demo');
+
+    Demo.data = {
+        recs : [
+            { foo: { bar: 1 }, baz: [ 10 ], "foo.bar": 100 },
+            { foo: { bar: 2 }, baz: [ 20 ], "foo.bar": 200 },
+            { foo: { bar: 3 }, baz: [ 30 ], "foo.bar": 300 },
+            { foo: { bar: 4 }, baz: [ 40 ], "foo.bar": 400 },
+            { foo: { bar: 5 }, baz: [ 50 ], "foo.bar": 500 }
+        ]
+    };
+
+    Demo.dataSource = new YAHOO.util.DataSource(Demo.data, {
+        responseType : YAHOO.util.DataSource.TYPE_JSON,
+        responseSchema : {
+            resultsList : 'recs',
+            fields : [
+                "foo.bar",
+                "baz[0]",
+                '["foo.bar"]'
+            ]
+        }
+    });
+
+    Demo.cols = [
+        { key: "foo.bar" },
+        { key: "baz[0]" },
+        { key: '["foo.bar"]' }
+    ];
+
+    Demo.dataTable = new YAHOO.widget.DataTable('x',Demo.cols,Demo.dataSource);
+
+})();
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js?highlight=javascript"></script>
+</body>
+</html>
