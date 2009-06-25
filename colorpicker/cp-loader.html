@@ -1,31 +1,26 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>Loading Color Picker with YUI Loader</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Loading Color Picker with YUI Loader</title>
 
-<!-- css --> 
-<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/button/assets/skins/sam/button.css"> 
-<!-- js --> 
-<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.5.2/build/yuiloader-dom-event/yuiloader-dom-event.js&2.5.2/build/element/element-beta-min.js&2.5.2/build/button/button-min.js"></script> 
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/button/assets/skins/sam/button.css"> 
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
 
-<style type="text/css">
-	#cpContainer {position:relative;}
-</style>
+    <style type="text/css">
+        #cpContainer {position:relative;}
+    </style>
 </head>
-
 <body class="yui-skin-sam">
-
-<h1>Loading Color Picker with YUI Loader</h1>
-
-	<!--BEGIN SOURCE CODE FOR EXAMPLE =============================== -->
+    <p class="meta">YUI version <em>2.5.2</em></p>
+    <h1>Loading Color Picker with YUI Loader</h1>
 	
 	<!--Container for our call-to-action button-->
-<div id="cpInsertButtonContainer"></div>
-<div id="cpContainer"></div>
+    <div id="cpInsertButtonContainer"></div>
+    <div id="cpContainer"></div>
 
-
-<script type="text/javascript">
+    <script type="text/javascript" src="http://yui.yahooapis.com/combo?2.5.2/build/yuiloader-dom-event/yuiloader-dom-event.js&2.5.2/build/element/element-beta-min.js&2.5.2/build/button/button-min.js"></script> 
+    <script type="text/javascript">
 
 //create a namespace object in the example namespace:
 YAHOO.namespace("example.colorpicker")
@@ -143,11 +138,9 @@ YAHOO.example.loaderinit = function() {
 	loader.insert();
 	
 };
-</script>
+    </script>
 	
-	<!--END SOURCE CODE FOR EXAMPLE =============================== -->
-
-
-<script type='text/javascript' src='http://track2.mybloglog.com/js/jsserv.php?mblID=2007010912241462'></script>
+    <script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+    <script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
 </body>
 </html>

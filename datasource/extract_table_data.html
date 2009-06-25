@@ -4,18 +4,8 @@
     <title>Test Page</title>
     <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/combo?2.6.0/build/datatable/assets/skins/sam/datatable.css&2.6.0/build/paginator/assets/skins/sam/paginator.css">
     <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
     <style type="text/css" class="highlight-ignore">
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        .origin {
-            display: block;
-            background: #795089;
-            padding: 1ex;
-            color: #fff;
-            text-align: right;
-            margin-bottom: 1em;
-        }
         .markup table {
             border: 1px solid #aaa;
             border-collapse: collapse;
@@ -40,6 +30,7 @@
 </head>
 <body class="yui-skin-sam">
 <a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/">ydn-js origin</a>
+<p class="meta">YUI version <em>2.6.0</em></p>
 <h1>Extracting raw data from a <code>&lt;table&gt;</code> using <code>YAHOO.util.DataSource</code></h1>
 <p>DataSource supports using a table in markup as its source of truth.  If all you need is the data from the table, you can create a &quot;pass-thru&quot; DataSource instance to leverage the DOM walking and parsing routines inside.</p>
 <p>In this example, a markup table will be parsed into an array named <code>data</code>.</p>

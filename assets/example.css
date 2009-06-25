@@ -37,3 +37,6 @@ body {
 .hide {
     display: none;
 }
+.highlight-example {
+    clear: both;
+}

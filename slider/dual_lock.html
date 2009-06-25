@@ -1,20 +1,10 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!doctype html>
 <html>
 <head>
     <title>Test Page</title>
     <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
     <style type="text/css">
-        body {
-            font: normal .9em/1.3 Arial, sans-serif;
-        }
-        .origin {
-            display: block;
-            background: #795089;
-            padding: 1ex;
-            color: #fff;
-            text-align: right;
-            margin-bottom: 1em;
-        }
         .markup {
             margin: 1em 0 1em 10em;
         }
@@ -43,6 +33,7 @@
 </head>
 <body class="yui-skin-sam">
 <a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/29621">ydn-js origin</a>
+<p class="meta">YUI version <em>2.5.1</em></p>
 
 <h1>Locking one of the thumbs in a DualSlider</h1>
 <h3>Challenge:</h3>
@@ -59,9 +50,7 @@
     <label for="lock"><input type="checkbox" id="lock" value="1"> Lock top thumb</label>
 </div>
 
-<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.5.1/build/yahoo-dom-event/yahoo-dom-event.js&2.5.1/build/dragdrop/dragdrop.js&2.5.1/build/slider/slider.js"></script>
 <script type="text/javascript">
 // Patch to support vertical DualSlider with thumbs wider than they are tall
 YAHOO.widget.DualSlider.prototype.updateValue=function(silent){var min=this.minSlider.getValue(),max=this.maxSlider.getValue(),changed=false;if(min!=this.minVal||max!=this.maxVal){changed=true;var mint=this.minSlider.thumb,maxt=this.maxSlider.thumb,dim=this.isHoriz?'x':'y';var thumbInnerWidth=this.minSlider.thumbCenterPoint[dim]+this.maxSlider.thumbCenterPoint[dim];var minConstraint=Math.max(max-thumbInnerWidth-this.minRange,0);var maxConstraint=Math.min(-min-thumbInnerWidth-this.minRange,0);if(this.isHoriz){minConstraint=Math.min(minConstraint,maxt.rightConstraint);mint.setXConstraint(mint.leftConstraint,minConstraint,mint.tickSize);maxt.setXConstraint(maxConstraint,maxt.rightConstraint,maxt.tickSize);}else{minConstraint=Math.min(minConstraint,maxt.bottomConstraint);mint.setYConstraint(mint.leftConstraint,minConstraint,mint.tickSize);maxt.setYConstraint(maxConstraint,maxt.bottomConstraint,maxt.tickSize);}}this.minVal=min;this.maxVal=max;if(changed&&!silent){this.fireEvent("change",this);}};

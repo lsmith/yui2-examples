@@ -1,20 +1,10 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!doctype html>
 <html>
 <head>
     <title>Test Page</title>
     <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
     <style type="text/css">
-        body {
-            font: normal .77em/1.4 Arial, sans-serif;
-        }
-        .origin {
-            display: block;
-            background: #795089;
-            padding: 1ex;
-            color: #fff;
-            text-align: right;
-            margin-bottom: 1em;
-        }
         .markup {
             padding: 1em 0;
             border-bottom: 1px solid #ccc;
@@ -42,6 +32,7 @@
 </head>
 <body class="yui-skin-sam">
 <a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/29151">ydn-js origin</a>
+<p class="meta">YUI version <em>2.5.1</em></p>
 <h1>Instantiating Sliders in a hidden container</h1>
 <h3>Challenge</h3>
 <p>Sliders use DOM position offsets to calculate value.  The initial offsets are calculated at instantiation.  If the Slider is instantiated in a hidden container, the initial offsets are stored as <code>NaN</code>, resulting in all further calculations returning <code>NaN</code>.</p>
@@ -116,14 +107,7 @@
     </div>
 </div>
 
-<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/dragdrop/dragdrop.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.5.1/build/slider/slider.js"></script>
-<!--
-<script type="text/javascript" src="/dev/2.5/yahoo/presentation/2.x/build/yahoo-dom-event/yahoo-dom-event.js"></script>
-<script type="text/javascript" src="/dev/2.5/yahoo/presentation/2.x/build/dragdrop/dragdrop.js"></script>
-<script type="text/javascript" src="/dev/2.5/yahoo/presentation/2.x/build/slider/slider.js"></script>
--->
+<script type="text/javascript" src="http://yui.yahooapis.com/combo?2.5.1/build/yahoo-dom-event/yahoo-dom-event.js&2.5.1/build/dragdrop/dragdrop.js&2.5.1/build/slider/slider.js"></script>
 
 <script type="text/javascript">
 YAHOO.util.Event.onDOMReady(function() {

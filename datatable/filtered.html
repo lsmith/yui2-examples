@@ -4,18 +4,8 @@
     <title>Test Page</title>
     <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/combo?2.6.0/build/datatable/assets/skins/sam/datatable.css&2.6.0/build/paginator/assets/skins/sam/paginator.css">
     <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
     <style type="text/css" class="highlight-ignore">
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        .origin {
-            display: block;
-            background: #795089;
-            padding: 1ex;
-            color: #fff;
-            text-align: right;
-            margin-bottom: 1em;
-        }
         #tbl {
             margin-top: 1em;
         }
@@ -23,6 +13,7 @@
 </head>
 <body class="yui-skin-sam">
 <a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/42932">ydn-js origin</a>
+<p class="meta">YUI version <em>2.6.0</em></p>
 <h1>Filtering a local DataTable</h1>
 <p>In this example, a local data set of area codes can be filtered by entering state names (case insensitive).  A simple <code>keyup</code> listener on the input element refreshes the DataTable after a slight delay&#8212;to allow for more input.</p>
 <p>The filtering is accomplished by defining the DataSource's <code>doBeforeCallback</code> hook and replacing the results array in the response.</p>
@@ -32,11 +23,6 @@
 </div>
 
 <script type="text/javascript" src="http://yui.yahooapis.com/combo?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js&2.6.0/build/element/element-beta-min.js&2.6.0/build/datasource/datasource-min.js&2.6.0/build/datatable/datatable-min.js&2.6.0/build/paginator/paginator-min.js"></script>
-<!--script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/element/element-beta.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datasource/datasource.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/datatable/datatable.js"></script>
-<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/paginator/paginator.js"></script-->
 <script type="text/javascript" src="data.js"></script>
 <script type="text/javascript">
 YAHOO.util.Event.onDOMReady(function () {

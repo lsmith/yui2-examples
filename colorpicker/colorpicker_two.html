@@ -1,19 +1,10 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!doctype html>
 <html>
 <head>
     <title>Test Page</title>
     <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
     <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.6.0/build/colorpicker/assets/skins/sam/colorpicker.css">
-    <style type="text/css" class="highlight-ignore">
-        .origin {
-            display: block;
-            background: #795089;
-            padding: 1ex;
-            color: #fff;
-            text-align: right;
-            margin-bottom: 1em;
-        }
-    </style>
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
     <style type="text/css">
         body {
             font: normal 83%/1.4 Arial, sans-serif;
@@ -80,6 +71,7 @@
 </head>
 <body class="yui-skin-sam">
 <a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/37291">ydn-js origin</a>
+<p class="meta">YUI version <em>2.6.0</em></p>
 <h1>Using multiple ColorPickers on a page</h1>
 <div class="markup example">
     <form action="#">
@@ -123,8 +115,12 @@ YAHOO.util.Event.onDOMReady(function () {
         }
     };
 
-    fgPicker = new ColorPicker('fg-picker',copy(conf));
-    bgPicker = new ColorPicker('bg-picker',copy(conf));
+    fgPicker = new ColorPicker('fg-picker',copy(conf, {
+        rgb: Color.hex2rgb(fgInput.value)
+    }));
+    bgPicker = new ColorPicker('bg-picker',copy(conf, {
+        rgb: Color.hex2rgb(bgInput.value)
+    }));
 
     // Subscribe to rgbChange on each to update the input in the legend
     // and the sample
@@ -147,12 +143,6 @@ YAHOO.util.Event.onDOMReady(function () {
     bgPicker.subscribe('rgbChange',function (e) {
         update(bgInput,'backgroundColor',e);
     });
-
-    // set the colors to match the inputs (this breaks IE if done in thread)
-    setTimeout(function () {
-        fgPicker.setValue(Color.hex2rgb(fgInput.value));
-        bgPicker.setValue(Color.hex2rgb(bgInput.value));
-    },1000);
 
     // Trap for enter key in the inputs
     Event.on(fgInput,'keydown',function (e) { 

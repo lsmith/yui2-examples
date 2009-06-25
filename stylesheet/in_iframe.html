@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+    <title>Test Page</title>
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
+    <link type="text/css" rel="stylesheet" href="../assets/example.css">
+    <style type="text/css">
+        iframe {
+            height: 300px;
+            width: 400px;
+            border: 3px solid #ccc;
+            margin: 1ex;
+        }
+    </style>
+</head>
+<body>
+<a class="origin" href="http://tech.groups.yahoo.com/group/ydn-javascript/message/">ydn-js origin</a>
+<p class="meta">YUI version <em>2.7.0</em></p>
+<div class="markup">
+    <button type="button" id="go">Change style in iframe</button>
+    <iframe id="inner" src="iframe.html"></iframe>
+</div>
+
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="/yui2/build/stylesheet/stylesheet.js"></script>
+<script type="text/javascript">
+YAHOO.util.Event.on('go','click',function () {
+    var Ex = YAHOO.namespace('example'), f, d, s;
+
+    if (!Ex.sheet) {
+        f = YAHOO.util.Dom.get('inner');
+        d = f.contentWindow.document || document;
+        s = d.createElement('style');
+
+        s.type = 'text/css';
+        //s.appendChild(d.createTextNode(''));
+
+        //d.getElementsByTagName('head')[0].appendChild(s);
+
+        Ex.sheet = YAHOO.util.StyleSheet(s);
+    }
+
+    Ex.sheet.set('body', { background: '#9f9' });
+});
+</script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlighter.js"></script>
+<script type="text/javascript" src="../assets/dpSyntaxHighlightExample.js"></script>
+</body>
+</html>
