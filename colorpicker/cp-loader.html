@@ -4,11 +4,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Loading Color Picker with YUI Loader</title>
 
+    <link type="text/css" rel="stylesheet" href="../assets/dpSyntaxHighlighter.css">
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/button/assets/skins/sam/button.css"> 
     <link type="text/css" rel="stylesheet" href="../assets/example.css">
 
     <style type="text/css">
-        #cpContainer {position:relative;}
+        #cpContainer.show {
+            position: relative;
+            background: #f5f5f5;
+            border: 1px solid #888;
+            width: 335px;
+            height: 190px;
+            margin-bottom: 1em;
+        }
     </style>
 </head>
 <body class="yui-skin-sam">
@@ -30,13 +38,14 @@ YAHOO.example.CPinit = function() {
     var Event = YAHOO.util.Event,
         picker;
 		
+    YAHOO.util.Dom.addClass('cpContainer','show');
 	YAHOO.log("Creating Color Picker.", "info", "example");
 	picker = new YAHOO.widget.ColorPicker("cpContainer", {
 			showhsvcontrols: true,
 			showhexcontrols: true,
 			images: {
-				PICKER_THUMB: "assets/picker_thumb.png",
-				HUE_THUMB: "assets/hue_thumb.png"
+				PICKER_THUMB: "images/picker_thumb.png",
+				HUE_THUMB: "images/hue_thumb.png"
 			}
 		});
 	YAHOO.log("Finished creating Color Picker.", "info", "example");

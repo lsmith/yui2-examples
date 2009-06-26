@@ -26,6 +26,9 @@
             background: #f00;
             margin: 2em auto;
         }
+        .hide-code .highlight-example {
+            display: none;
+        }
     </style>
 </head>
 <body class="yui-skin-sam">
@@ -60,6 +63,7 @@ YAHOO.widget.Slider.prototype.onDrag=function(e){if(!this.isLocked()&&this.backg
 YAHOO.util.Event.onDOMReady(function () {
 
     var Ex = YAHOO.namespace('example'),
+        Dom = YAHOO.util.Dom,
         big = document.getElementById('big');
         
     Ex.slider = YAHOO.widget.Slider.getHorizSlider('bg','t',0,200,20);
@@ -71,13 +75,13 @@ YAHOO.util.Event.onDOMReady(function () {
     // Toggle the code visibility
     YAHOO.util.Event.on('toggle_code','click', function (e) {
         YAHOO.util.Event.stopEvent(e);
-        var code = document.getElementsByTagName('h2')[0].parentNode;
-        if (code.className === 'hide') {
+
+        if (Dom.hasClass(document.body,'hide-code')) {
             this.innerHTML = 'Hide code';
-            code.className = '';
+            Dom.removeClass(document.body,'hide-code');
         } else {
             this.innerHTML = 'Show code';
-            code.className = 'hide';
+            Dom.addClass(document.body,'hide-code');
         }
     });
 });

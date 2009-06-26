@@ -38,7 +38,7 @@
 <div class="markup">
     <div id="pg"></div>
     <div class="gal">
-        <img id="gal_img" src="../assets/images/pumkin1.jpg" alt="The first pumpkin" width="150" height="113">
+        <img id="gal_img" src="images/pumkin1.jpg" alt="The first pumpkin" width="150" height="113">
     </div>
 </div>
 
@@ -47,9 +47,9 @@
 YAHOO.util.Event.onDOMReady(function () {
     var img       = document.getElementById('gal_img'),
         images    = [
-            {src:'../assets/images/pumkin1.jpg', alt:'The first pumpkin'},
-            {src:'../assets/images/pumkin2.jpg', alt:'The second pumpkin'},
-            {src:'../assets/images/pumkin3.jpg', alt:'The third pumpkin'}
+            {src:'images/pumkin1.jpg', alt:'The first pumpkin'},
+            {src:'images/pumkin2.jpg', alt:'The second pumpkin'},
+            {src:'images/pumkin3.jpg', alt:'The third pumpkin'}
         ],
         paginator = new YAHOO.widget.Paginator({
             containers   : ['pg'],
